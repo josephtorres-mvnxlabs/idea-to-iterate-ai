@@ -43,8 +43,12 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
       // In a real app, you'd get the user ID from auth context
       const userId = "current-user-id"; 
       
-      // Convert form data to database model
-      const epicData = mapEpicFormToDatabase(data, userId);
+      // Convert form data to database model - ensure all required fields are present
+      const epicData = mapEpicFormToDatabase({
+        title: data.title,
+        description: data.description,
+        estimation: data.estimation
+      }, userId);
       
       // Submit to API
       await epicApi.create(epicData);
@@ -150,8 +154,9 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
           <Button 
             type="submit" 
             className="bg-devops-purple hover:bg-devops-purple-dark"
+            disabled={isSubmitting}
           >
-            Create Epic
+            {isSubmitting ? 'Creating...' : 'Create Epic'}
           </Button>
         </div>
       </form>

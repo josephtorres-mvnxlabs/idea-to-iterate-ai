@@ -65,8 +65,15 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
       // In a real app, you'd get the user ID from auth context
       const userId = "current-user-id"; 
       
-      // Convert form data to database model
-      const taskData = mapTaskFormToDatabase(data, userId, isProductIdea);
+      // Convert form data to database model - ensure all required fields are present
+      const taskData = mapTaskFormToDatabase({
+        title: data.title,
+        description: data.description,
+        epic: data.epic,
+        assignee: data.assignee,
+        estimation: data.estimation,
+        priority: data.priority
+      }, userId, isProductIdea);
       
       // Submit to API
       await taskApi.create(taskData);
