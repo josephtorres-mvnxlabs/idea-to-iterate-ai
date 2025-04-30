@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 
@@ -98,14 +98,23 @@ const EpicsAndTasks = () => {
       {/* Task Submission Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
-          <TaskSubmissionForm onSuccess={() => setIsTaskDialogOpen(false)} isProductIdea={false} />
+          <DialogTitle>Create New Task</DialogTitle>
+          <TaskSubmissionForm 
+            onSuccess={() => setIsTaskDialogOpen(false)} 
+            onCancel={() => setIsTaskDialogOpen(false)}
+            isProductIdea={false} 
+          />
         </DialogContent>
       </Dialog>
 
       {/* Epic Submission Dialog */}
       <Dialog open={isEpicDialogOpen} onOpenChange={setIsEpicDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
-          <EpicSubmissionForm onSuccess={() => setIsEpicDialogOpen(false)} />
+          <DialogTitle>Create New Epic</DialogTitle>
+          <EpicSubmissionForm 
+            onSuccess={() => setIsEpicDialogOpen(false)} 
+            onCancel={() => setIsEpicDialogOpen(false)} 
+          />
         </DialogContent>
       </Dialog>
     </MainLayout>

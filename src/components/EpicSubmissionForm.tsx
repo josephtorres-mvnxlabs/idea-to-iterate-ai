@@ -23,9 +23,10 @@ const defaultValues: Partial<EpicFormValues> = {
 
 interface EpicSubmissionFormProps {
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export function EpicSubmissionForm({ onSuccess }: EpicSubmissionFormProps) {
+export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormProps) {
   const { toast } = useToast();
 
   const form = useForm<EpicFormValues>({
@@ -44,6 +45,13 @@ export function EpicSubmissionForm({ onSuccess }: EpicSubmissionFormProps) {
     
     if (onSuccess) {
       onSuccess();
+    }
+  };
+
+  const handleCancel = () => {
+    form.reset();
+    if (onCancel) {
+      onCancel();
     }
   };
 
@@ -111,7 +119,7 @@ export function EpicSubmissionForm({ onSuccess }: EpicSubmissionFormProps) {
         />
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" type="button" onClick={() => form.reset()}>
+          <Button variant="outline" type="button" onClick={handleCancel}>
             Cancel
           </Button>
           <Button 
