@@ -9,8 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 
 const Index = () => {
+  const [open, setOpen] = React.useState(false);
+
   return (
     <MainLayout>
       <div className="mb-6">
@@ -28,10 +32,17 @@ const Index = () => {
             <TabsTrigger value="newRequest">New Request</TabsTrigger>
           </TabsList>
           
-          <Button className="bg-devops-purple hover:bg-devops-purple-dark">
-            <Plus className="h-4 w-4 mr-1" />
-            New Request
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-devops-purple hover:bg-devops-purple-dark">
+                <Plus className="h-4 w-4 mr-1" />
+                New Request
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <TaskSubmissionForm onSuccess={() => setOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
         
         <TabsContent value="dashboard">

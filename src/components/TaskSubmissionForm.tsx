@@ -15,10 +15,7 @@ const taskFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   epic: z.string().optional(),
   assignee: z.string().optional(),
-  estimation: z.string().transform((val) => {
-    const parsed = parseInt(val, 10);
-    return isNaN(parsed) ? 0 : parsed;
-  }),
+  estimation: z.coerce.number().min(0).default(1),
   priority: z.enum(["low", "medium", "high"]),
 });
 
@@ -26,10 +23,14 @@ type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 const defaultValues: Partial<TaskFormValues> = {
   priority: "medium",
-  estimation: "1",
+  estimation: 1,
 };
 
-export function TaskSubmissionForm() {
+interface TaskSubmissionFormProps {
+  onSuccess?: () => void;
+}
+
+export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
@@ -45,6 +46,10 @@ export function TaskSubmissionForm() {
     
     console.log("Task submitted:", data);
     form.reset();
+    
+    if (onSuccess) {
+      onSuccess();
+    }
   };
 
   // Sample epic data
@@ -64,6 +69,8 @@ export function TaskSubmissionForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <h2 className="text-2xl font-bold mb-4">Create New Task</h2>
+        
         <FormField
           control={form.control}
           name="title"
@@ -167,7 +174,8 @@ export function TaskSubmissionForm() {
                     type="number" 
                     min="1" 
                     placeholder="Estimated completion days" 
-                    {...field} 
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} 
                   />
                 </FormControl>
                 <FormMessage />
