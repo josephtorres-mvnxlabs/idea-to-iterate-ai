@@ -15,7 +15,10 @@ const taskFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   epic: z.string().optional(),
   assignee: z.string().optional(),
-  estimation: z.string().transform(val => parseInt(val, 10)),
+  estimation: z.string().transform((val) => {
+    const parsed = parseInt(val, 10);
+    return isNaN(parsed) ? 0 : parsed;
+  }),
   priority: z.enum(["low", "medium", "high"]),
 });
 
