@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
+import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 
 const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
+  const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
   
   // Sample epics data
   const epics = [
@@ -33,7 +35,10 @@ const EpicsAndTasks = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button className="bg-devops-purple hover:bg-devops-purple-dark">
+            <Button 
+              className="bg-devops-purple hover:bg-devops-purple-dark"
+              onClick={() => setIsEpicDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-1" />
               New Epic
             </Button>
@@ -94,6 +99,13 @@ const EpicsAndTasks = () => {
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <TaskSubmissionForm onSuccess={() => setIsTaskDialogOpen(false)} isProductIdea={false} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Epic Submission Dialog */}
+      <Dialog open={isEpicDialogOpen} onOpenChange={setIsEpicDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <EpicSubmissionForm onSuccess={() => setIsEpicDialogOpen(false)} />
         </DialogContent>
       </Dialog>
     </MainLayout>
