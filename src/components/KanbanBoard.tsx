@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -230,7 +229,10 @@ function TaskCard({ task, listView }: TaskCardProps) {
           
           <div className={`flex ${listView ? 'items-center space-x-4' : 'justify-between mt-3'}`}>
             <div className="flex items-center space-x-2">
-              <Badge variant={task.status === "done" ? "success" : "outline"} className="text-xs">
+              <Badge 
+                variant={task.status === "done" ? "outline" : "outline"} 
+                className={`text-xs ${task.status === "done" ? "bg-devops-green/20 text-devops-green border-devops-green" : ""}`}
+              >
                 {getStatusLabel(task.status)}
               </Badge>
               {task.status === "done" && task.actual !== undefined && (
