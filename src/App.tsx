@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import EpicsAndTasks from "./pages/EpicsAndTasks";
 import Reports from "./pages/Reports";
 import Team from "./pages/Team";
+import TeamMemberProfile from "./pages/TeamMemberProfile";
 import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/epics-and-tasks" element={<EpicsAndTasks />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/team" element={<Team />} />
+          <Route path="/team/profile/:id" element={<TeamMemberProfile />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

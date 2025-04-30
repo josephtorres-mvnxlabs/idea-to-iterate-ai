@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface TeamMember {
   id: string;
@@ -67,8 +68,13 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
         </div>
       </CardContent>
       <CardFooter className="bg-muted/20 p-4 flex justify-center">
-        <Button variant="outline" size="sm" className="w-full">
-          View Profile
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full"
+          asChild
+        >
+          <Link to={`/team/profile/${member.id}`}>View Profile</Link>
         </Button>
       </CardFooter>
     </Card>
