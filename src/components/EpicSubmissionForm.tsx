@@ -8,6 +8,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { epicApi } from "@/services/api";
+import { mapEpicFormToDatabase } from "@/services/formMapper";
 
 const epicFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -28,23 +30,46 @@ interface EpicSubmissionFormProps {
 
 export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormProps) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<EpicFormValues>({
     resolver: zodResolver(epicFormSchema),
     defaultValues,
   });
 
-  const onSubmit = (data: EpicFormValues) => {
-    toast({
-      title: "Epic created",
-      description: `Epic "${data.title}" has been created successfully.`,
-    });
-    
-    console.log("Epic submitted:", data);
-    form.reset();
-    
-    if (onSuccess) {
-      onSuccess();
+  const onSubmit = async (data: EpicFormValues) => {
+    setIsSubmitting(true);
+    try {
+      // In a real app, you'd get the user ID from auth context
+      const userId = "current-user-id"; 
+      
+      // Convert form data to database model
+      const epicData = mapEpicFormToDatabase(data, userId);
+      
+      // Submit to API
+      await epicApi.create(epicData);
+      
+      // Show success toast
+      toast({
+        title: "Epic created",
+        description: `Epic "${data.title}" has been created successfully.`,
+      });
+      
+      console.log("Epic submitted:", data);
+      form.reset();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to create epic:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create epic. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

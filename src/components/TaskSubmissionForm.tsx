@@ -9,6 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { taskApi, epicApi, userApi } from "@/services/api";
+import { mapTaskFormToDatabase } from "@/services/formMapper";
+import { useQuery } from "@tanstack/react-query";
+import { Epic, User } from "@/models/database";
 
 const taskFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -34,43 +38,65 @@ interface TaskSubmissionFormProps {
 
 export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false }: TaskSubmissionFormProps) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Fetch epics for dropdown
+  const { data: epics } = useQuery({
+    queryKey: ['epics'],
+    queryFn: epicApi.getAll,
+    placeholderData: [] as Epic[]
+  });
+
+  // Fetch team members for dropdown
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: userApi.getAll,
+    placeholderData: [] as User[]
+  });
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues,
   });
 
-  const onSubmit = (data: TaskFormValues) => {
-    const successMessage = isProductIdea 
-      ? `Product idea "${data.title}" has been created and will be curated to an epic.`
-      : `Task "${data.title}" has been created successfully.`;
-    
-    toast({
-      title: isProductIdea ? "Product idea created" : "Task created",
-      description: successMessage,
-    });
-    
-    console.log(isProductIdea ? "Product idea submitted:" : "Task submitted:", data);
-    form.reset();
-    
-    if (onSuccess) {
-      onSuccess();
+  const onSubmit = async (data: TaskFormValues) => {
+    setIsSubmitting(true);
+    try {
+      // In a real app, you'd get the user ID from auth context
+      const userId = "current-user-id"; 
+      
+      // Convert form data to database model
+      const taskData = mapTaskFormToDatabase(data, userId, isProductIdea);
+      
+      // Submit to API
+      await taskApi.create(taskData);
+      
+      const successMessage = isProductIdea 
+        ? `Product idea "${data.title}" has been created and will be curated to an epic.`
+        : `Task "${data.title}" has been created successfully.`;
+      
+      toast({
+        title: isProductIdea ? "Product idea created" : "Task created",
+        description: successMessage,
+      });
+      
+      console.log(isProductIdea ? "Product idea submitted:" : "Task submitted:", data);
+      form.reset();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      toast({
+        title: "Error",
+        description: `Failed to create ${isProductIdea ? "product idea" : "task"}. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  // Sample epic data
-  const epics = [
-    { id: "1", name: "User Authentication System Overhaul" },
-    { id: "2", name: "Performance Optimization Initiative" },
-    { id: "3", name: "ML-Driven Recommendations" },
-  ];
-
-  // Sample team members
-  const teamMembers = [
-    { id: "1", name: "John Smith" },
-    { id: "2", name: "Emma Watson" },
-    { id: "3", name: "Michael Brown" },
-  ];
 
   const handleCancel = () => {
     form.reset();
@@ -145,9 +171,9 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="new">+ Create new epic</SelectItem>
-                      {epics.map((epic) => (
+                      {epics?.map((epic) => (
                         <SelectItem key={epic.id} value={epic.id}>
-                          {epic.name}
+                          {epic.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -176,9 +202,9 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {epics.map((epic) => (
+                      {epics?.map((epic) => (
                         <SelectItem key={epic.id} value={epic.id}>
-                          {epic.name}
+                          {epic.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -208,9 +234,9 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {teamMembers.map((member) => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {member.name}
+                    {users?.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -270,14 +296,15 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" type="button" onClick={handleCancel}>
+          <Button variant="outline" type="button" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button 
             type="submit" 
             className="bg-devops-purple hover:bg-devops-purple-dark"
+            disabled={isSubmitting}
           >
-            {isProductIdea ? "Submit Product Idea" : "Create Task"}
+            {isSubmitting ? 'Submitting...' : isProductIdea ? "Submit Product Idea" : "Create Task"}
           </Button>
         </div>
       </form>
