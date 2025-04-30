@@ -8,9 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 
 const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   
   // Sample epics data
   const epics = [
@@ -34,7 +37,10 @@ const EpicsAndTasks = () => {
               <Plus className="h-4 w-4 mr-1" />
               New Epic
             </Button>
-            <Button className="bg-devops-purple-dark hover:bg-devops-purple">
+            <Button 
+              className="bg-devops-purple-dark hover:bg-devops-purple"
+              onClick={() => setIsTaskDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-1" />
               New Task
             </Button>
@@ -83,6 +89,19 @@ const EpicsAndTasks = () => {
         
         <KanbanBoard />
       </div>
+
+      {/* Task Submission Dialog */}
+      <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Task</DialogTitle>
+            <DialogDescription>
+              Add a new task to the board. Fill out the form below with the task details.
+            </DialogDescription>
+          </DialogHeader>
+          <TaskSubmissionForm />
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
