@@ -28,10 +28,11 @@ const defaultValues: Partial<TaskFormValues> = {
 
 interface TaskSubmissionFormProps {
   onSuccess?: () => void;
+  onCancel?: () => void; // Added onCancel prop
   isProductIdea?: boolean;
 }
 
-export function TaskSubmissionForm({ onSuccess, isProductIdea = false }: TaskSubmissionFormProps) {
+export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false }: TaskSubmissionFormProps) {
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
@@ -262,7 +263,14 @@ export function TaskSubmissionForm({ onSuccess, isProductIdea = false }: TaskSub
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" type="button" onClick={() => form.reset()}>
+          <Button 
+            variant="outline" 
+            type="button" 
+            onClick={() => {
+              form.reset();
+              if (onCancel) onCancel();
+            }}
+          >
             Cancel
           </Button>
           <Button 

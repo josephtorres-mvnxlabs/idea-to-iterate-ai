@@ -40,7 +40,11 @@ const Index = () => {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
-              <TaskSubmissionForm onSuccess={() => setOpen(false)} isProductIdea={true} />
+              <TaskSubmissionForm 
+                onSuccess={() => setOpen(false)} 
+                onCancel={() => setOpen(false)} 
+                isProductIdea={true} 
+              />
             </DialogContent>
           </Dialog>
         </div>
