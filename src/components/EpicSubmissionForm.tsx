@@ -12,21 +12,20 @@ import { useToast } from "@/hooks/use-toast";
 const epicFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  duration: z.coerce.number().min(1, "Duration must be at least 1 week").default(4),
+  estimation: z.coerce.number().min(1).default(14),
 });
 
 type EpicFormValues = z.infer<typeof epicFormSchema>;
 
 const defaultValues: Partial<EpicFormValues> = {
-  duration: 4,
+  estimation: 14,
 };
 
 interface EpicSubmissionFormProps {
   onSuccess?: () => void;
-  onCancel?: () => void; // Added onCancel prop
 }
 
-export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormProps) {
+export function EpicSubmissionForm({ onSuccess }: EpicSubmissionFormProps) {
   const { toast } = useToast();
 
   const form = useForm<EpicFormValues>({
@@ -75,13 +74,13 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Describe the epic in detail" 
+                  placeholder="Describe the epic and its goals" 
                   className="min-h-[100px]" 
                   {...field} 
                 />
               </FormControl>
               <FormDescription>
-                Epic descriptions should clearly outline the overall goal and business value
+                Provide a clear description of what this epic aims to achieve
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -90,33 +89,29 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
 
         <FormField
           control={form.control}
-          name="duration"
+          name="estimation"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Estimated Duration (weeks)</FormLabel>
+              <FormLabel>Estimated Duration (days)</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
                   min="1" 
-                  placeholder="Estimated duration in weeks"
+                  placeholder="Estimated completion time in days"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} 
+                  onChange={(e) => field.onChange(parseInt(e.target.value) || 14)} 
                 />
               </FormControl>
+              <FormDescription>
+                Approximate time needed to complete all tasks in this epic
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button 
-            variant="outline" 
-            type="button" 
-            onClick={() => {
-              form.reset();
-              if (onCancel) onCancel();
-            }}
-          >
+          <Button variant="outline" type="button" onClick={() => form.reset()}>
             Cancel
           </Button>
           <Button 
