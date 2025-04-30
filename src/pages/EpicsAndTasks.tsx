@@ -93,13 +93,7 @@ const EpicsAndTasks = () => {
       {/* Task Submission Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to the board. Fill out the form below with the task details.
-            </DialogDescription>
-          </DialogHeader>
-          <TaskSubmissionForm />
+          <TaskSubmissionForm onSuccess={() => setIsTaskDialogOpen(false)} isProductIdea={false} />
         </DialogContent>
       </Dialog>
     </MainLayout>

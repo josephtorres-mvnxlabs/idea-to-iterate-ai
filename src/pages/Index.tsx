@@ -36,11 +36,11 @@ const Index = () => {
             <DialogTrigger asChild>
               <Button className="bg-devops-purple hover:bg-devops-purple-dark">
                 <Plus className="h-4 w-4 mr-1" />
-                New Request
+                New Product Idea
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
-              <TaskSubmissionForm onSuccess={() => setOpen(false)} />
+              <TaskSubmissionForm onSuccess={() => setOpen(false)} isProductIdea={true} />
             </DialogContent>
           </Dialog>
         </div>

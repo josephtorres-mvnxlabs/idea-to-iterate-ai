@@ -28,9 +28,10 @@ const defaultValues: Partial<TaskFormValues> = {
 
 interface TaskSubmissionFormProps {
   onSuccess?: () => void;
+  isProductIdea?: boolean;
 }
 
-export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
+export function TaskSubmissionForm({ onSuccess, isProductIdea = false }: TaskSubmissionFormProps) {
   const { toast } = useToast();
 
   const form = useForm<TaskFormValues>({
@@ -39,12 +40,16 @@ export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
   });
 
   const onSubmit = (data: TaskFormValues) => {
+    const successMessage = isProductIdea 
+      ? `Product idea "${data.title}" has been created and will be curated to an epic.`
+      : `Task "${data.title}" has been created successfully.`;
+    
     toast({
-      title: "Task created",
-      description: `Task "${data.title}" has been created successfully.`,
+      title: isProductIdea ? "Product idea created" : "Task created",
+      description: successMessage,
     });
     
-    console.log("Task submitted:", data);
+    console.log(isProductIdea ? "Product idea submitted:" : "Task submitted:", data);
     form.reset();
     
     if (onSuccess) {
@@ -69,16 +74,18 @@ export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <h2 className="text-2xl font-bold mb-4">Create New Task</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          {isProductIdea ? "Create New Product Idea" : "Create New Task"}
+        </h2>
         
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>{isProductIdea ? "Product Idea Title" : "Task Title"}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter task title" {...field} />
+                <Input placeholder={isProductIdea ? "Enter product idea title" : "Enter task title"} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -93,47 +100,89 @@ export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Describe the task in detail" 
+                  placeholder={isProductIdea 
+                    ? "Describe your product idea in detail. What problem does it solve? Who is it for?" 
+                    : "Describe the task in detail"
+                  } 
                   className="min-h-[100px]" 
                   {...field} 
                 />
               </FormControl>
+              {isProductIdea && (
+                <FormDescription>
+                  Great product ideas clearly define the problem, target audience, and proposed solution
+                </FormDescription>
+              )}
               <FormMessage />
             </FormItem>
           )}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="epic"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Epic</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an epic" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {epics.map((epic) => (
-                      <SelectItem key={epic.id} value={epic.id}>
-                        {epic.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  The epic this task belongs to
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isProductIdea ? (
+            <FormField
+              control={form.control}
+              name="epic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Epic</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an epic or create new" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="new">+ Create new epic</SelectItem>
+                      {epics.map((epic) => (
+                        <SelectItem key={epic.id} value={epic.id}>
+                          {epic.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select an existing epic or create a new one
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="epic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Epic</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an epic" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {epics.map((epic) => (
+                        <SelectItem key={epic.id} value={epic.id}>
+                          {epic.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    The epic this task belongs to
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
@@ -168,12 +217,14 @@ export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
             name="estimation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Estimation (days)</FormLabel>
+                <FormLabel>
+                  {isProductIdea ? "Estimated Size (days)" : "Estimation (days)"}
+                </FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
                     min="1" 
-                    placeholder="Estimated completion days" 
+                    placeholder={isProductIdea ? "Estimated effort in days" : "Estimated completion days"}
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} 
                   />
@@ -218,7 +269,7 @@ export function TaskSubmissionForm({ onSuccess }: TaskSubmissionFormProps) {
             type="submit" 
             className="bg-devops-purple hover:bg-devops-purple-dark"
           >
-            Create Task
+            {isProductIdea ? "Submit Product Idea" : "Create Task"}
           </Button>
         </div>
       </form>
