@@ -16,6 +16,7 @@ import {
 import { Bell, BarChart, Plus, Home, Book, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
 
 export function AppLogo() {
   return (
@@ -29,6 +30,13 @@ export function AppLogo() {
 }
 
 export function AppSidebar() {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  const isActive = (path: string) => {
+    return currentPath === path;
+  };
+  
   return (
     <Sidebar>
       <SidebarHeader className="py-4">
@@ -50,27 +58,59 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className={cn("w-full justify-start text-sidebar-primary")}>
-                  <Home className="w-4 h-4 mr-2" />
-                  <span>Dashboard</span>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/">
+                    <Home className="w-4 h-4 mr-2" />
+                    <span>Dashboard</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-start">
-                  <Book className="w-4 h-4 mr-2" />
-                  <span>Epics & Tasks</span>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/epics-and-tasks') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/epics-and-tasks">
+                    <Book className="w-4 h-4 mr-2" />
+                    <span>Epics & Tasks</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-start">
-                  <BarChart className="w-4 h-4 mr-2" />
-                  <span>Reports</span>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/reports') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/reports">
+                    <BarChart className="w-4 h-4 mr-2" />
+                    <span>Reports</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-start">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>Team</span>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/team') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/team">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span>Team</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -81,9 +121,17 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-start">
-                  <Settings className="w-4 h-4 mr-2" />
-                  <span>Settings</span>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/settings') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/settings">
+                    <Settings className="w-4 h-4 mr-2" />
+                    <span>Settings</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
