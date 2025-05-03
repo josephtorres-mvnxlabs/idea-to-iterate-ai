@@ -8,28 +8,55 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Separator } from "@/components/ui/separator";
+
+// Sample epics data structure with more complete information
+const SAMPLE_EPICS = [
+  {
+    id: "epic-1",
+    title: "User Authentication System Overhaul",
+    description: "Revamp the existing authentication system to include biometric options and improve security",
+    estimation: 14,
+    capability_category: "security"
+  },
+  {
+    id: "epic-2",
+    title: "Performance Optimization Initiative",
+    description: "Identify and resolve performance bottlenecks across the platform",
+    estimation: 21,
+    capability_category: "infrastructure"
+  },
+  {
+    id: "epic-3",
+    title: "ML-Driven Recommendations",
+    description: "Implement machine learning algorithms to provide personalized product recommendations",
+    estimation: 30,
+    capability_category: "data"
+  }
+];
 
 const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
   const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
-  const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<string | null>(null);
+  const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
   
-  // Sample epics data
-  const epics = [
-    "User Authentication System Overhaul",
-    "Performance Optimization Initiative",
-    "ML-Driven Recommendations"
-  ];
+  const handleEditEpic = (epicTitle: string) => {
+    const epic = SAMPLE_EPICS.find(e => e.title === epicTitle);
+    if (epic) {
+      setSelectedEpicToEdit(epic);
+      setIsEditEpicDialogOpen(true);
+    }
+  };
 
-  const handleEditEpic = (epic: string) => {
-    setSelectedEpicToEdit(epic);
-    setIsEditEpicDialogOpen(true);
+  const handleSaveEpic = () => {
+    // In a real app, this would save the epic to the database
+    setIsEditEpicDialogOpen(false);
+    setSelectedEpicToEdit(null);
   };
 
   return (
@@ -79,21 +106,21 @@ const EpicsAndTasks = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {epics.map((epic) => (
+              {SAMPLE_EPICS.map((epic) => (
                 <Badge 
-                  key={epic}
+                  key={epic.id}
                   variant="outline" 
-                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic ? 'bg-devops-purple/20 border-devops-purple' : ''} group relative`}
-                  onClick={() => setSelectedEpic(epic === selectedEpic ? undefined : epic)}
+                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic.title ? 'bg-devops-purple/20 border-devops-purple' : ''} group relative`}
+                  onClick={() => setSelectedEpic(epic.title === selectedEpic ? undefined : epic.title)}
                 >
-                  {epic}
+                  {epic.title}
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="ml-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEditEpic(epic);
+                      handleEditEpic(epic.title);
                     }}
                   >
                     <Pencil className="h-3 w-3" />
@@ -173,9 +200,15 @@ const EpicsAndTasks = () => {
             </DialogDescription>
           </DialogHeader>
           <EpicSubmissionForm 
-            onSuccess={() => setIsEditEpicDialogOpen(false)} 
+            onSuccess={handleSaveEpic} 
             onCancel={() => setIsEditEpicDialogOpen(false)} 
-            initialValues={{ title: selectedEpicToEdit || '' }}
+            initialValues={selectedEpicToEdit ? {
+              title: selectedEpicToEdit.title,
+              description: selectedEpicToEdit.description,
+              estimation: selectedEpicToEdit.estimation,
+              capability_category: selectedEpicToEdit.capability_category
+            } : undefined}
+            epicId={selectedEpicToEdit?.id}
           />
         </DialogContent>
       </Dialog>

@@ -13,13 +13,12 @@ import { mapEpicFormToDatabase } from "@/services/formMapper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Task } from "@/models/database";
 import { Separator } from "@/components/ui/separator";
-import { Plus, ListTodo, Save, X } from "lucide-react";
+import { Plus, ListTodo, Save, X, Pencil, Check } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "./TaskSubmissionForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 const epicFormSchema = z.object({
@@ -43,9 +42,70 @@ interface EpicSubmissionFormProps {
   onCancel?: () => void;
   initialValues?: Partial<EpicFormValues>;
   useSheet?: boolean;
+  epicId?: string;
 }
 
-export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useSheet = false }: EpicSubmissionFormProps) {
+// Sample tasks data for demo purposes
+const SAMPLE_TASKS: Task[] = [
+  {
+    id: "task-1",
+    title: "Set up biometric authentication API",
+    description: "Implement the backend API for biometric authentication",
+    status: "backlog",
+    epic_id: "epic-1",
+    estimation: 3,
+    priority: "medium",
+    assignee_id: "user-1",
+    created_by: "user-1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_product_idea: false
+  },
+  {
+    id: "task-2",
+    title: "Create mobile UI for biometric prompts",
+    description: "Design and implement the UI for fingerprint and face recognition",
+    status: "in_progress",
+    epic_id: "epic-1",
+    estimation: 2,
+    priority: "high",
+    assignee_id: "user-2",
+    created_by: "user-1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_product_idea: false
+  },
+  {
+    id: "task-3",
+    title: "Optimize CDN performance",
+    description: "Configure and optimize CDN for faster asset delivery",
+    status: "backlog",
+    epic_id: "epic-2",
+    estimation: 2,
+    priority: "medium",
+    assignee_id: "user-3",
+    created_by: "user-1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_product_idea: false
+  },
+  {
+    id: "task-4",
+    title: "Implement recommendation engine",
+    description: "Build ML-based recommendation engine for product suggestions",
+    status: "in_progress",
+    epic_id: "epic-3",
+    estimation: 5,
+    priority: "high",
+    assignee_id: "user-2",
+    created_by: "user-1",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_product_idea: false
+  }
+];
+
+export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useSheet = false, epicId }: EpicSubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [epicTasks, setEpicTasks] = React.useState<Task[]>([]);
@@ -57,41 +117,11 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
   // Fetch tasks for this epic if we're editing
   React.useEffect(() => {
     const fetchTasks = async () => {
-      if (isEditing && initialValues?.title) {
+      if (isEditing && epicId) {
         try {
-          // In a real app, we would fetch tasks by epic ID
-          // For now, we'll use our sample data based on epic title
-          const sampleTasks: Task[] = [
-            {
-              id: "task-1",
-              title: "Set up biometric authentication API",
-              description: "Implement the backend API for biometric authentication",
-              status: "backlog", // Changed from "todo" to "backlog" which is a valid status
-              epic_id: "epic-1",
-              estimation: 3,
-              priority: "medium",
-              assignee_id: "user-1",
-              created_by: "user-1",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_product_idea: false
-            },
-            {
-              id: "task-2",
-              title: "Create mobile UI for biometric prompts",
-              description: "Design and implement the UI for fingerprint and face recognition",
-              status: "in_progress",
-              epic_id: "epic-1",
-              estimation: 2,
-              priority: "high",
-              assignee_id: "user-2",
-              created_by: "user-1",
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              is_product_idea: false
-            }
-          ];
-          setEpicTasks(sampleTasks);
+          // In a real app, we would fetch tasks by epic ID from API
+          const filteredTasks = SAMPLE_TASKS.filter(task => task.epic_id === epicId);
+          setEpicTasks(filteredTasks);
         } catch (error) {
           console.error("Failed to fetch tasks for epic:", error);
         }
@@ -99,7 +129,7 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
     };
     
     fetchTasks();
-  }, [isEditing, initialValues?.title]);
+  }, [isEditing, epicId]);
 
   const form = useForm<EpicFormValues>({
     resolver: zodResolver(epicFormSchema),
@@ -123,7 +153,6 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       // Submit to API
       if (isEditing) {
         // Update existing epic
-        // await epicApi.update(epicId, epicData);
         toast({
           title: "Epic updated",
           description: `Epic "${data.title}" has been updated successfully.`,
@@ -144,10 +173,10 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
         onSuccess();
       }
     } catch (error) {
-      console.error("Failed to create epic:", error);
+      console.error("Failed to create/update epic:", error);
       toast({
         title: "Error",
-        description: "Failed to create epic. Please try again.",
+        description: "Failed to save epic. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -171,11 +200,39 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
     setIsEditTaskDialogOpen(true);
   };
   
-  const handleTaskSuccess = () => {
-    setIsNewTaskDialogOpen(false);
-    setIsEditTaskDialogOpen(false);
-    setSelectedTask(null);
-    // In a real app, we would refresh the task list
+  const handleTaskSuccess = (isNew: boolean = true) => {
+    if (isNew) {
+      setIsNewTaskDialogOpen(false);
+    } else {
+      setIsEditTaskDialogOpen(false);
+      setSelectedTask(null);
+    }
+    
+    // In a real app, we would refresh the task list from the API
+    // For demo purposes, we'll simulate adding/updating a task
+    if (isNew && epicId) {
+      const newTask: Task = {
+        id: `task-${Math.floor(Math.random() * 1000)}`,
+        title: "New Sample Task",
+        description: "This is a newly added task",
+        status: "backlog",
+        epic_id: epicId,
+        estimation: 2,
+        priority: "medium",
+        assignee_id: "user-1",
+        created_by: "user-1",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_product_idea: false
+      };
+      
+      setEpicTasks(prev => [...prev, newTask]);
+      
+      toast({
+        title: "Task added",
+        description: "New task has been added to this epic.",
+      });
+    }
   };
 
   const formContent = (
@@ -287,15 +344,16 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                   variant="outline" 
                   size="sm"
                   onClick={handleAddTask}
+                  className="bg-devops-purple/10 hover:bg-devops-purple/20"
                 >
                   <Plus className="h-4 w-4 mr-1" /> Add Task
                 </Button>
               </div>
               
-              <ScrollArea className="h-[200px] rounded-md border">
+              <ScrollArea className="h-[250px] rounded-md border">
                 {epicTasks.length > 0 ? (
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-white">
                       <TableRow>
                         <TableHead>Task</TableHead>
                         <TableHead>Status</TableHead>
@@ -306,7 +364,12 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                     <TableBody>
                       {epicTasks.map((task) => (
                         <TableRow key={task.id}>
-                          <TableCell>{task.title}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{task.title}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {task.description}
+                            </div>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="secondary" className={
                               task.status === 'done' ? 'bg-green-100 text-green-800' :
@@ -324,8 +387,10 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                               variant="ghost" 
                               size="sm" 
                               onClick={() => handleEditTask(task)}
+                              className="h-8 w-8 p-0"
                             >
-                              Edit
+                              <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit task</span>
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -333,16 +398,20 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="text-center py-6 border rounded-md bg-gray-50">
-                    <p className="text-muted-foreground">No tasks found for this epic.</p>
+                  <div className="text-center py-12 px-4">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
+                      <ListTodo className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-medium">No tasks yet</h3>
+                    <p className="text-sm text-muted-foreground mt-2 mb-4">
+                      Get started by adding your first task to this epic.
+                    </p>
                     <Button 
                       type="button"
-                      variant="outline"
-                      size="sm"
                       onClick={handleAddTask}
-                      className="mt-2"
+                      className="bg-devops-purple hover:bg-devops-purple-dark"
                     >
-                      <Plus className="h-4 w-4 mr-1" /> Add your first task
+                      <Plus className="h-4 w-4 mr-1" /> Add first task
                     </Button>
                   </div>
                 )}
@@ -354,32 +423,42 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
     </Form>
   );
 
-  const actionButtons = (
-    <div className="flex justify-end space-x-2 pt-4 sticky bottom-0 bg-background pb-2">
-      <Button variant="outline" type="button" onClick={handleCancel}>
-        <X className="h-4 w-4 mr-1" />
-        Cancel
-      </Button>
-      <Button 
-        type="submit" 
-        className="bg-devops-purple hover:bg-devops-purple-dark"
-        disabled={isSubmitting}
-        onClick={form.handleSubmit(onSubmit)}
-      >
-        <Save className="h-4 w-4 mr-1" />
-        {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Save Epic' : 'Create Epic')}
-      </Button>
-    </div>
-  );
-  
   // For modal dialog rendering
   if (!useSheet) {
     return (
       <>
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">{isEditing ? 'Edit Epic' : 'Create New Epic'}</h2>
-          {formContent}
-          {actionButtons}
+          <div className="mb-4">
+            {formContent}
+          </div>
+          
+          <DialogFooter className="mt-6 pt-4 border-t sticky bottom-0 bg-background pb-2 z-10">
+            <Button variant="outline" type="button" onClick={handleCancel}>
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-devops-purple hover:bg-devops-purple-dark"
+              disabled={isSubmitting}
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isEditing ? 'Saving...' : 'Creating...'}
+                </span>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-1" />
+                  {isEditing ? 'Save Changes' : 'Create Epic'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </div>
         
         {/* New Task Dialog */}
@@ -392,11 +471,22 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
               </DialogDescription>
             </DialogHeader>
             <TaskSubmissionForm 
-              onSuccess={handleTaskSuccess} 
+              onSuccess={() => handleTaskSuccess(true)} 
               onCancel={() => setIsNewTaskDialogOpen(false)}
               isProductIdea={false}
               epicId={initialValues?.title}
             />
+            <DialogFooter className="mt-4 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsNewTaskDialogOpen(false)}>
+                <X className="h-4 w-4 mr-1" /> Cancel
+              </Button>
+              <Button 
+                className="bg-devops-purple hover:bg-devops-purple-dark"
+                onClick={() => handleTaskSuccess(true)}
+              >
+                <Check className="h-4 w-4 mr-1" /> Add Task
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
         
@@ -411,7 +501,7 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                 </DialogDescription>
               </DialogHeader>
               <TaskSubmissionForm 
-                onSuccess={handleTaskSuccess} 
+                onSuccess={() => handleTaskSuccess(false)} 
                 onCancel={() => setIsEditTaskDialogOpen(false)}
                 isProductIdea={false}
                 epicId={initialValues?.title}
@@ -424,6 +514,17 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
                   priority: selectedTask.priority,
                 }}
               />
+              <DialogFooter className="mt-4 pt-4 border-t">
+                <Button variant="outline" onClick={() => setIsEditTaskDialogOpen(false)}>
+                  <X className="h-4 w-4 mr-1" /> Cancel
+                </Button>
+                <Button 
+                  className="bg-devops-purple hover:bg-devops-purple-dark"
+                  onClick={() => handleTaskSuccess(false)}
+                >
+                  <Save className="h-4 w-4 mr-1" /> Save Changes
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         )}
@@ -443,7 +544,21 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
         </SheetHeader>
         <div className="space-y-4">
           {formContent}
-          {actionButtons}
+          <div className="flex justify-end space-x-2 pt-4 sticky bottom-0 bg-background pb-2">
+            <Button variant="outline" type="button" onClick={handleCancel}>
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-devops-purple hover:bg-devops-purple-dark"
+              disabled={isSubmitting}
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {isSubmitting ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Epic' : 'Create Epic')}
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
