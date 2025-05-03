@@ -7,6 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Calendar, BarChart2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { taskApi, epicApi, userApi } from "@/services/api";
+import { User, Epic, Task } from "@/models/database";
+import { differenceInDays } from "date-fns";
 
 interface TeamMember {
   id: string;
@@ -20,6 +24,7 @@ interface TeamMember {
   epics: string[];
 }
 
+// This is just used as fallback when API fails
 const SAMPLE_TEAM_MEMBERS: TeamMember[] = [
   {
     id: "user-1",
@@ -87,7 +92,127 @@ const TeamMemberProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const teamMember = SAMPLE_TEAM_MEMBERS.find(member => member.id === id);
+  // Fetch user data
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ['user', id],
+    queryFn: () => userApi.getById(id || ''),
+    enabled: !!id,
+  });
+
+  // Fetch tasks assigned to this user
+  const { data: userTasks = [], isLoading: isLoadingTasks } = useQuery({
+    queryKey: ['tasks', 'user', id],
+    queryFn: () => taskApi.getAll().then(tasks => 
+      tasks.filter(task => task.assignee_id === id)
+    ),
+    enabled: !!id,
+  });
+
+  // Fetch all epics to identify which ones the user is working on
+  const { data: allEpics = [], isLoading: isLoadingEpics } = useQuery({
+    queryKey: ['epics'],
+    queryFn: () => epicApi.getAll(),
+  });
+
+  const isLoading = isLoadingUser || isLoadingTasks || isLoadingEpics;
+
+  // Process the data to create our team member profile
+  const teamMember = React.useMemo(() => {
+    // If loading or no data yet, use sample data as fallback
+    if (isLoading || !userData) {
+      return SAMPLE_TEAM_MEMBERS.find(member => member.id === id);
+    }
+
+    // Get active and completed tasks
+    const activeTasks = userTasks.filter(task => 
+      task.status !== 'done'
+    ).length;
+    
+    const completedTasks = userTasks.filter(task => 
+      task.status === 'done'
+    ).length;
+
+    // Get epics this user is working on
+    const userEpicIds = new Set(
+      userTasks
+        .filter(task => task.epic_id)
+        .map(task => task.epic_id as string)
+    );
+    
+    const userEpics = allEpics
+      .filter(epic => userEpicIds.has(epic.id))
+      .map(epic => epic.title);
+
+    // Calculate user initials
+    const nameParts = userData.name.split(' ');
+    const initials = nameParts.length > 1 
+      ? `${nameParts[0][0]}${nameParts[1][0]}` 
+      : `${nameParts[0][0]}`;
+
+    return {
+      id: userData.id,
+      name: userData.name,
+      role: userData.role,
+      email: userData.email,
+      avatar: userData.avatar_url,
+      initials: initials,
+      activeTasks,
+      completedTasks,
+      epics: userEpics
+    };
+  }, [id, userData, userTasks, allEpics, isLoading]);
+
+  // Calculate performance metrics
+  const performanceMetrics = React.useMemo(() => {
+    if (isLoading || !teamMember || userTasks.length === 0) {
+      return {
+        velocity: 8.5,
+        velocityPercentage: 85,
+        completionRate: 92,
+        workload: 65
+      };
+    }
+
+    // Calculate velocity (story points/week)
+    let totalEstimation = 0;
+    userTasks
+      .filter(task => task.status === 'done')
+      .forEach(task => {
+        totalEstimation += task.estimation;
+      });
+    
+    // Estimate weekly velocity (assuming completed tasks over 4 weeks for this example)
+    const velocity = totalEstimation > 0 ? totalEstimation / 4 : 0;
+    
+    // Calculate task completion rate
+    const completionRate = userTasks.length > 0
+      ? Math.round((teamMember.completedTasks / userTasks.length) * 100)
+      : 0;
+    
+    // Calculate current workload based on active tasks vs capacity
+    // Assuming average capacity is 5 tasks at a time
+    const workload = Math.min(Math.round((teamMember.activeTasks / 5) * 100), 100);
+    
+    return {
+      velocity,
+      velocityPercentage: Math.min(Math.round(velocity * 10), 100), // Scale for visual display
+      completionRate,
+      workload
+    };
+  }, [isLoading, teamMember, userTasks]);
+  
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="w-full max-w-3xl space-y-4">
+            <div className="h-8 bg-muted animate-pulse rounded"></div>
+            <div className="h-64 bg-muted animate-pulse rounded"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
   
   if (!teamMember) {
     return (
@@ -200,30 +325,41 @@ const TeamMemberProfile = () => {
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Velocity</span>
-                      <span className="text-sm text-muted-foreground">8.5 story points/week</span>
+                      <span className="text-sm text-muted-foreground">
+                        {performanceMetrics.velocity.toFixed(1)} story points/week
+                      </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5">
-                      <div className="bg-devops-purple h-2.5 rounded-full" style={{ width: "85%" }}></div>
+                      <div 
+                        className="bg-devops-purple h-2.5 rounded-full" 
+                        style={{ width: `${performanceMetrics.velocityPercentage}%` }}
+                      ></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Task Completion Rate</span>
-                      <span className="text-sm text-muted-foreground">92%</span>
+                      <span className="text-sm text-muted-foreground">{performanceMetrics.completionRate}%</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5">
-                      <div className="bg-devops-green h-2.5 rounded-full" style={{ width: "92%" }}></div>
+                      <div 
+                        className="bg-devops-green h-2.5 rounded-full" 
+                        style={{ width: `${performanceMetrics.completionRate}%` }}
+                      ></div>
                     </div>
                   </div>
                   
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Workload</span>
-                      <span className="text-sm text-muted-foreground">65%</span>
+                      <span className="text-sm text-muted-foreground">{performanceMetrics.workload}%</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5">
-                      <div className="bg-devops-yellow h-2.5 rounded-full" style={{ width: "65%" }}></div>
+                      <div 
+                        className="bg-devops-yellow h-2.5 rounded-full" 
+                        style={{ width: `${performanceMetrics.workload}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
