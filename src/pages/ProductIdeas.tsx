@@ -69,7 +69,7 @@ const mockIdeas: (ProductIdea & {
 
 const ProductIdeas = () => {
   const [isIdeaDialogOpen, setIsIdeaDialogOpen] = React.useState(false);
-  const [activeView, setActiveView] = React.useState("cards");
+  const [activeView, setActiveView] = React.useState("board"); // Changed default view from "cards" to "board"
   const [selectedIdea, setSelectedIdea] = React.useState<(typeof mockIdeas)[0] | null>(null);
   const [ideas, setIdeas] = React.useState(mockIdeas);
   
@@ -130,7 +130,7 @@ const ProductIdeas = () => {
                 <Tabs 
                   value={activeView} 
                   onValueChange={setActiveView} 
-                  defaultValue="cards"
+                  defaultValue="board"  // Changed default value from "cards" to "board"
                 >
                   <TabsList className="h-8">
                     <TabsTrigger value="cards" className="text-xs px-3 flex items-center">
