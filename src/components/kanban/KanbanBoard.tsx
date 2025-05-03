@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ListTodo, Plus } from "lucide-react";
 import { TaskCard } from "./TaskCard";
@@ -50,7 +51,7 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
     priority: dbTask.priority || "medium",
     assigned_date: dbTask.assigned_date,
     completion_date: dbTask.completion_date,
-    team_members: dbTask.team_members || [],
+    team_members: dbTask.team_members || [], // Properly map team_members
   };
 };
 

@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 
 export interface Task {
@@ -18,6 +17,7 @@ export interface Task {
   priority?: "low" | "medium" | "high";
   assigned_date?: string;
   completion_date?: string;
+  team_members?: string[]; // Added team_members property
 }
 
 export interface TaskCardProps {
