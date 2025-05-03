@@ -35,19 +35,22 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
     }
   };
   
+  // Add console log to debug task mapping
+  console.log('Mapping task:', dbTask.id, dbTask.title, 'Epic ID:', dbTask.epic_id);
+  
   return {
     id: dbTask.id,
     title: dbTask.title,
     description: dbTask.description,
-    status: mapStatus(dbTask.status), // Fixed: Use dbTask.status instead of undefined dbStatus
+    status: mapStatus(dbTask.status),
     estimation: dbTask.estimation,
     // Safely handle assignee data
     assignee: {
-      name: dbTask.assignee_id ? "Assigned User" : "Unassigned", // This would ideally come from actual user data
-      initials: dbTask.assignee_id ? "AU" : "UA", // This would ideally be generated from user name
+      name: dbTask.assignee_id ? "Assigned User" : "Unassigned",
+      initials: dbTask.assignee_id ? "AU" : "UA",
       ...(dbTask.assignee_id && { id: dbTask.assignee_id }),
     },
-    // Extract epic ID and title
+    // Extract epic ID and title - ensure we're using epic_id for filtering
     epic: dbTask.epic_id || "",
     priority: dbTask.priority || "medium",
   };
@@ -55,30 +58,57 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
 
 export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardProps) {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [editingTask, setEditingTask] = React.useState<UITask | null>(null);
 
+  // Add console log to debug selected epic
+  console.log('KanbanBoard - Selected Epic:', selectedEpic);
+
   // Get tasks from API and map them to UI model
-  const { data: dbTasks = [], isLoading } = useQuery({
+  const { data: dbTasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['tasks', { epic: selectedEpic }],
-    queryFn: () => taskApi.getAll(), // Removed the argument as the function doesn't expect one
+    queryFn: () => {
+      console.log('Fetching tasks for epic:', selectedEpic || 'all tasks');
+      return taskApi.getAll();
+    },
   });
+
+  // Set loading state based on query loading state
+  React.useEffect(() => {
+    setIsLoading(isLoadingTasks);
+  }, [isLoadingTasks]);
 
   // Map database tasks to UI tasks and filter by selected epic if needed
   const tasks = React.useMemo(() => {
+    // Log database tasks for debugging
+    console.log('Database tasks received:', dbTasks.length, dbTasks);
+    
     // First map the database tasks to UI format
     const mappedTasks = dbTasks.map(mapDatabaseTaskToUITask);
+    console.log('Mapped tasks:', mappedTasks.length, mappedTasks);
     
     // Then filter by selectedEpic if one is specified
     if (selectedEpic) {
-      return mappedTasks.filter(task => task.epic === selectedEpic);
+      console.log('Filtering by epic:', selectedEpic);
+      const filteredTasks = mappedTasks.filter(task => {
+        console.log('Task epic check:', task.id, task.title, 'Epic:', task.epic, 'Match:', task.epic === selectedEpic);
+        return task.epic === selectedEpic;
+      });
+      console.log('Filtered tasks count:', filteredTasks.length);
+      return filteredTasks;
     }
     
     return mappedTasks;
   }, [dbTasks, selectedEpic]);
 
+  // Add console logs for filtering by status
+  console.log('Total tasks after filtering by epic:', tasks.length);
   const todoTasks = tasks.filter(task => task.status === "todo");
+  console.log('Todo tasks count:', todoTasks.length);
   const inProgressTasks = tasks.filter(task => task.status === "inProgress");
+  console.log('In progress tasks count:', inProgressTasks.length);
   const doneTasks = tasks.filter(task => task.status === "done");
+  console.log('Done tasks count:', doneTasks.length);
 
   const handleEditTask = (task: UITask) => {
     setEditingTask(task);
@@ -90,8 +120,22 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
     setEditingTask(null);
   };
 
+  // Modify loading state to show a more detailed message when there are no tasks
   if (isLoading) {
     return <div className="py-10 text-center">Loading tasks...</div>;
+  }
+
+  // Add a message when there are no tasks at all
+  if (tasks.length === 0) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-muted-foreground mb-2">
+          {selectedEpic ? 
+            `No tasks found for the selected epic.` : 
+            `No tasks found. Create your first task!`}
+        </p>
+      </div>
+    );
   }
 
   if (viewMode === "list") {

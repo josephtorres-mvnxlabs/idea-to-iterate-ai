@@ -1,5 +1,8 @@
-
 import { Epic, Task, User, ProductIdea, TABLES, EpicWithTasks, ProductIdeaWithEpics } from '../models/database';
+import { MOCK_TASKS, MOCK_EPICS, MOCK_USERS } from './mockData';
+
+// Flag to toggle between real API and mock data
+const USE_MOCK_DATA = true;
 
 // Base API URL - In a real app, this would come from environment variables
 const API_BASE_URL = '/api';
@@ -10,7 +13,18 @@ async function fetchAPI<T>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body?: any
 ): Promise<T> {
+  if (USE_MOCK_DATA) {
+    console.log(`Using mock data for ${method} ${endpoint}`);
+    // Return mock data based on the endpoint
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getMockDataForEndpoint(endpoint, method, body) as T);
+      }, 300); // Simulate network delay
+    });
+  }
+  
   try {
+    console.log(`Fetching API: ${method} ${API_BASE_URL}${endpoint}`);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method,
       headers: {
@@ -28,6 +42,66 @@ async function fetchAPI<T>(
     console.error('API request failed:', error);
     throw error;
   }
+}
+
+// Helper function to get mock data based on endpoint
+function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
+  console.log(`Getting mock data for: ${method} ${endpoint}`);
+  
+  // GET requests
+  if (method === 'GET') {
+    // All tasks
+    if (endpoint === `/${TABLES.TASKS}`) {
+      console.log('Returning mock tasks:', MOCK_TASKS.length);
+      return MOCK_TASKS;
+    }
+    
+    // All epics
+    if (endpoint === `/${TABLES.EPICS}`) {
+      return MOCK_EPICS;
+    }
+    
+    // All users
+    if (endpoint === `/${TABLES.USERS}`) {
+      return MOCK_USERS;
+    }
+    
+    // Tasks for a specific epic
+    if (endpoint.match(new RegExp(`/${TABLES.EPICS}/[\\w-]+/tasks`))) {
+      const epicId = endpoint.split('/')[2];
+      return MOCK_TASKS.filter(task => task.epic_id === epicId);
+    }
+  }
+  
+  // POST requests - create new items
+  if (method === 'POST') {
+    if (endpoint === `/${TABLES.TASKS}`) {
+      // Generate a new task with the provided data
+      const newTask: Task = {
+        id: `task-${Date.now()}`,
+        ...body,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      MOCK_TASKS.push(newTask);
+      return newTask;
+    }
+    
+    if (endpoint === `/${TABLES.EPICS}`) {
+      // Generate a new epic with the provided data
+      const newEpic: Epic = {
+        id: `epic-${Date.now()}`,
+        ...body,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      MOCK_EPICS.push(newEpic);
+      return newEpic;
+    }
+  }
+  
+  // Default - empty response
+  return {};
 }
 
 // Epic related API calls
@@ -66,9 +140,15 @@ export const epicApi = {
 
 // Task related API calls
 export const taskApi = {
-  getAll: () => fetchAPI<Task[]>(`/${TABLES.TASKS}`),
+  getAll: () => {
+    console.log('Calling taskApi.getAll()');
+    return fetchAPI<Task[]>(`/${TABLES.TASKS}`);
+  },
   
-  getByEpic: (epicId: string) => fetchAPI<Task[]>(`/${TABLES.EPICS}/${epicId}/tasks`),
+  getByEpic: (epicId: string) => {
+    console.log('Calling taskApi.getByEpic():', epicId);
+    return fetchAPI<Task[]>(`/${TABLES.EPICS}/${epicId}/tasks`);
+  },
   
   getById: (id: string) => fetchAPI<Task>(`/${TABLES.TASKS}/${id}`),
   

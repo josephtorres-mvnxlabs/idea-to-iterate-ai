@@ -39,6 +39,7 @@ const SAMPLE_EPICS = [
 ];
 
 const EpicsAndTasks = () => {
+  // Modified to store the epic ID instead of the title
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
@@ -46,8 +47,11 @@ const EpicsAndTasks = () => {
   const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
   const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
-  const handleEditEpic = (epicTitle: string) => {
-    const epic = SAMPLE_EPICS.find(e => e.title === epicTitle);
+  // Debug console logs
+  console.log('EpicsAndTasks - Selected Epic ID:', selectedEpic);
+  
+  const handleEditEpic = (epicId: string) => {
+    const epic = SAMPLE_EPICS.find(e => e.id === epicId);
     if (epic) {
       setSelectedEpicToEdit(epic);
       setIsEditEpicDialogOpen(true);
@@ -111,8 +115,11 @@ const EpicsAndTasks = () => {
                 <Badge 
                   key={epic.id}
                   variant="outline" 
-                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic.title ? 'bg-devops-purple/20 border-devops-purple' : ''} group relative`}
-                  onClick={() => setSelectedEpic(epic.title === selectedEpic ? undefined : epic.title)}
+                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic.id ? 'bg-devops-purple/20 border-devops-purple' : ''} group relative`}
+                  onClick={() => {
+                    console.log('Selecting epic:', epic.id);
+                    setSelectedEpic(selectedEpic === epic.id ? undefined : epic.id);
+                  }}
                 >
                   {epic.title}
                   <Button 
@@ -121,7 +128,7 @@ const EpicsAndTasks = () => {
                     className="ml-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleEditEpic(epic.title);
+                      handleEditEpic(epic.id);
                     }}
                   >
                     <Pencil className="h-3 w-3" />
@@ -132,7 +139,7 @@ const EpicsAndTasks = () => {
             </div>
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                {selectedEpic ? `Showing tasks for: ${selectedEpic}` : 'Showing all tasks'}
+                {selectedEpic ? `Showing tasks for: ${SAMPLE_EPICS.find(e => e.id === selectedEpic)?.title || selectedEpic}` : 'Showing all tasks'}
               </div>
             </div>
           </CardContent>
