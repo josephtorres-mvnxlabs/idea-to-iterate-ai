@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ListTodo, Plus } from "lucide-react";
 import { TaskCard } from "./TaskCard";
@@ -54,6 +55,8 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
     // Extract epic ID and title - ensure we're using epic_id for filtering
     epic: dbTask.epic_id || "",
     priority: dbTask.priority || "medium",
+    assigned_date: dbTask.assigned_date,
+    completion_date: dbTask.completion_date,
   };
 };
 
@@ -197,6 +200,26 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
             ))}
           </tbody>
         </table>
+
+        {/* Task Edit Dialog - Shared between views */}
+        <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <TaskSubmissionForm 
+              onSuccess={handleTaskDialogClose} 
+              onCancel={handleTaskDialogClose} 
+              taskValues={editingTask ? {
+                title: editingTask.title,
+                description: editingTask.description || "",
+                epic: editingTask.epic,
+                assignee: editingTask.assignee?.id || "",
+                estimation: editingTask.estimation,
+                priority: editingTask.priority || "medium",
+                assigned_date: editingTask.assigned_date ? new Date(editingTask.assigned_date) : undefined,
+                completion_date: editingTask.completion_date ? new Date(editingTask.completion_date) : undefined
+              } : undefined}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -233,7 +256,9 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
               epic: editingTask.epic,
               assignee: editingTask.assignee?.id || "",
               estimation: editingTask.estimation,
-              priority: editingTask.priority || "medium"
+              priority: editingTask.priority || "medium",
+              assigned_date: editingTask.assigned_date ? new Date(editingTask.assigned_date) : undefined,
+              completion_date: editingTask.completion_date ? new Date(editingTask.completion_date) : undefined
             } : undefined}
           />
         </DialogContent>
