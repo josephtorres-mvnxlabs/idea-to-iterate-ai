@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/MainLayout";
@@ -103,7 +102,7 @@ const TeamMemberProfile = () => {
     );
   }
 
-  // If API fails, use sample data as fallback
+  // If API fails or teamMember is undefined, use sample data as fallback
   const memberData = teamMember || SAMPLE_TEAM_MEMBERS.find(member => member.id === id);
   
   console.log("Team Member Profile - memberData:", memberData);

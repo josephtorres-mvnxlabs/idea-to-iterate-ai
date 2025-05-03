@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { differenceInDays } from "date-fns";
 import { taskApi, epicApi, userApi } from "@/services/api";
@@ -52,7 +51,7 @@ export function useTeamMember(userId: string | undefined) {
 
   const isLoading = isLoadingUser || isLoadingTasks || isLoadingEpics;
 
-  // Default sample data for the specific user ID if we fail to fetch it from API
+  // Default sample data for the specific user ID
   let fallbackData = null;
   if (userId) {
     const samples = [
@@ -110,7 +109,9 @@ export function useTeamMember(userId: string | undefined) {
   }
 
   // Process the data to create our team member profile with defensive coding
-  const teamMember: TeamMember | undefined = userData ? {
+  // The key fix: Check if userData is empty object or falsy, not just falsy
+  const isUserDataEmpty = !userData || Object.keys(userData).length === 0;
+  const teamMember: TeamMember | undefined = !isUserDataEmpty ? {
     id: userData.id,
     name: userData.name || "Unknown User",
     role: userData.role || "No Role Assigned",
