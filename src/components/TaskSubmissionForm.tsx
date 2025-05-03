@@ -68,7 +68,8 @@ export function TaskSubmissionForm({
     return {
       ...defaultValues,
       ...(taskValues || {}),
-      ...(epicId && !taskValues?.epic ? { epic: epicId } : {})
+      // When editing, prioritize the epic from taskValues, otherwise use the provided epicId
+      epic: (taskValues?.epic || epicId)
     };
   }, [epicId, taskValues]);
 
@@ -77,6 +78,13 @@ export function TaskSubmissionForm({
     defaultValues: formDefaultValues,
   });
 
+  // If epicId changes and we're not in edit mode, update the epic field
+  React.useEffect(() => {
+    if (epicId && !isEditing) {
+      form.setValue('epic', epicId);
+    }
+  }, [epicId, form, isEditing]);
+
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
@@ -84,10 +92,11 @@ export function TaskSubmissionForm({
       const userId = "current-user-id"; 
       
       // Convert form data to database model - ensure all required fields are present
+      // Ensure we're using the passed epic either from form data or epicId prop
       const taskData = mapTaskFormToDatabase({
         title: data.title,
         description: data.description,
-        epic: data.epic,
+        epic: data.epic || epicId, // Prioritize form data but fall back to epicId
         assignee: data.assignee,
         estimation: data.estimation,
         priority: data.priority
@@ -199,8 +208,8 @@ export function TaskSubmissionForm({
                   <FormLabel>Target Epic</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    disabled={!!epicId}
+                    value={field.value}
+                    disabled={!!epicId && !isEditing}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -232,8 +241,8 @@ export function TaskSubmissionForm({
                   <FormLabel>Epic</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                    disabled={!!epicId}
+                    value={field.value}
+                    disabled={!!epicId && !isEditing}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -265,7 +274,7 @@ export function TaskSubmissionForm({
                 <FormLabel>Assignee</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -273,6 +282,7 @@ export function TaskSubmissionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {users?.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}
@@ -315,7 +325,7 @@ export function TaskSubmissionForm({
                 <FormLabel>Priority</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
-                  defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
