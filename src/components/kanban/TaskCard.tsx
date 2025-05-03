@@ -11,13 +11,13 @@ import { TaskCardProps } from "./types";
 export function getStatusColor(status: string) {
   switch (status) {
     case "todo":
-      return "bg-devops-gray/20";
+      return "bg-orange-100 text-orange-800 border-orange-200";
     case "inProgress":
-      return "bg-devops-yellow/20 border-devops-yellow";
+      return "bg-blue-100 text-blue-800 border-blue-200";
     case "done":
-      return "bg-devops-green/20 border-devops-green";
+      return "bg-green-100 text-green-800 border-green-200";
     default:
-      return "bg-devops-gray/20";
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 }
 
@@ -35,61 +35,46 @@ export function getStatusLabel(status: string) {
 }
 
 export function TaskCard({ task, listView, onEdit }: TaskCardProps) {
+  const statusColor = getStatusColor(task.status);
+  
   return (
-    <Card className={`task-card relative group ${listView ? 'flex justify-between items-center p-3' : 'p-4'}`}>
-      <div className="w-full">
-        <div className={`flex ${listView ? 'items-center' : 'flex-col space-y-2'}`}>
-          <div className={`${listView ? 'flex-1' : 'w-full'}`}>
-            <h4 className="font-medium">{task.title}</h4>
-            {(!listView || task.description) && (
-              <p className={`text-xs text-muted-foreground ${listView ? 'hidden sm:inline ml-2' : 'mt-1'}`}>
-                {task.description || "No description"}
-              </p>
-            )}
-          </div>
+    <Card className="task-card relative group hover:shadow-md transition-all border-l-4 border-l-devops-purple">
+      <div className="p-3">
+        <div className="flex justify-between items-start">
+          <h4 className="font-medium text-gray-900">{task.title}</h4>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onEdit) onEdit();
+            }}
+          >
+            <Pencil className="h-3 w-3" />
+            <span className="sr-only">Edit</span>
+          </Button>
+        </div>
+        
+        {task.description && (
+          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</p>
+        )}
+        
+        <div className="flex justify-between items-center mt-3">
+          <Badge variant="outline" className={`text-xs ${statusColor}`}>
+            {getStatusLabel(task.status)}
+          </Badge>
           
-          <div className={`flex ${listView ? 'items-center space-x-4 ml-2' : 'justify-between mt-3'}`}>
-            <div className="flex items-center space-x-2">
-              <Badge 
-                variant={task.status === "done" ? "outline" : "outline"} 
-                className={`text-xs ${task.status === "done" ? "bg-devops-green/20 text-devops-green border-devops-green" : ""}`}
-              >
-                {getStatusLabel(task.status)}
-              </Badge>
-              {task.status === "done" && task.actual !== undefined && (
-                <span className={`text-xs ${task.actual <= task.estimation ? 'text-devops-green' : 'text-devops-red'}`}>
-                  {task.actual} / {task.estimation} days
-                </span>
-              )}
-              {task.status !== "done" && (
-                <span className="text-xs text-muted-foreground">
-                  Est: {task.estimation} days
-                </span>
-              )}
-            </div>
-            
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-gray-500">{task.estimation}d</span>
             <Avatar className="h-6 w-6">
-              <AvatarFallback className="text-xs bg-devops-purple-light text-white">
+              <AvatarFallback className="text-xs bg-devops-purple/80 text-white">
                 {task.assignee.initials}
               </AvatarFallback>
             </Avatar>
           </div>
         </div>
       </div>
-      
-      {/* Edit button - made more visible */}
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-50 hover:bg-gray-100"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onEdit) onEdit();
-        }}
-      >
-        <Pencil className="h-4 w-4" />
-        <span className="sr-only">Edit task</span>
-      </Button>
     </Card>
   );
 }

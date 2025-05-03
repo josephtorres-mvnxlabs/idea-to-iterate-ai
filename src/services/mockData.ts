@@ -33,8 +33,8 @@ export const MOCK_USERS: User[] = [
 export const MOCK_EPICS: Epic[] = [
   {
     id: "epic-1",
-    title: "User Authentication System Overhaul",
-    description: "Revamp the existing authentication system to include biometric options and improve security",
+    title: "Authentication System",
+    description: "Implement biometric authentication and improve security",
     estimation: 14,
     capability_category: "security",
     status: "in_progress",
@@ -44,7 +44,7 @@ export const MOCK_EPICS: Epic[] = [
   },
   {
     id: "epic-2",
-    title: "Performance Optimization Initiative",
+    title: "Performance Optimization",
     description: "Identify and resolve performance bottlenecks across the platform",
     estimation: 21,
     capability_category: "infrastructure",
@@ -55,8 +55,8 @@ export const MOCK_EPICS: Epic[] = [
   },
   {
     id: "epic-3",
-    title: "ML-Driven Recommendations",
-    description: "Implement machine learning algorithms to provide personalized product recommendations",
+    title: "ML Recommendations",
+    description: "Implement machine learning algorithms for personalized recommendations",
     estimation: 30,
     capability_category: "data",
     status: "planning",
