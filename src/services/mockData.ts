@@ -91,7 +91,7 @@ export const MOCK_TASKS: Task[] = [
     assignee_id: "user-2",
     estimation: 3,
     priority: "high",
-    status: "todo",
+    status: "ready", // Changed from "todo" to "ready" to match allowed values
     is_product_idea: false,
     created_by: "user-1",
     created_at: "2024-01-11T00:00:00Z",
@@ -105,7 +105,7 @@ export const MOCK_TASKS: Task[] = [
     assignee_id: "user-3",
     estimation: 2,
     priority: "medium",
-    status: "todo",
+    status: "ready", // Changed from "todo" to "ready" to match allowed values
     is_product_idea: false,
     created_by: "user-1",
     created_at: "2024-01-12T00:00:00Z",

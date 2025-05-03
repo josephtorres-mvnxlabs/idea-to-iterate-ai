@@ -36,7 +36,7 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
   };
   
   // Add console log to debug task mapping
-  console.log('Mapping task:', dbTask.id, dbTask.title, 'Epic ID:', dbTask.epic_id);
+  console.log('Mapping task:', dbTask.id, dbTask.title, 'Epic ID:', dbTask.epic_id, 'Status:', dbTask.status);
   
   return {
     id: dbTask.id,
