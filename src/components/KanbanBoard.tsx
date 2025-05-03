@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -137,7 +138,13 @@ function calculateEpicProgress(tasks: Task[]): number {
 }
 
 export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
+  // Set internal state based on prop
   const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
+  
+  // Update internal state when prop changes
+  React.useEffect(() => {
+    setSelectedEpicState(selectedEpic);
+  }, [selectedEpic]);
   
   // Get tasks filtered by selected epic
   const filteredTasks = React.useMemo(() => {
