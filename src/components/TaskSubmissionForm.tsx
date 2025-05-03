@@ -26,6 +26,7 @@ const taskFormSchema = z.object({
   assignee: z.string().optional(),
   estimation: z.coerce.number().min(0).default(1),
   priority: z.enum(["low", "medium", "high"]),
+  status: z.enum(["backlog", "ready", "in_progress", "review", "done"]).optional(),
   assigned_date: z.date().optional().nullable(),
   completion_date: z.date().optional().nullable(),
 });
@@ -35,6 +36,7 @@ type TaskFormValues = z.infer<typeof taskFormSchema>;
 const defaultValues: Partial<TaskFormValues> = {
   priority: "medium",
   estimation: 1,
+  status: "backlog",
   assigned_date: null,
   completion_date: null,
 };
@@ -109,6 +111,7 @@ export function TaskSubmissionForm({
         assignee: data.assignee,
         estimation: data.estimation,
         priority: data.priority,
+        status: data.status,
         assigned_date: data.assigned_date ? format(data.assigned_date, "yyyy-MM-dd") : undefined,
         completion_date: data.completion_date ? format(data.completion_date, "yyyy-MM-dd") : undefined
       }, userId, isProductIdea);
@@ -353,6 +356,40 @@ export function TaskSubmissionForm({
               </FormItem>
             )}
           />
+          
+          {/* Add Task Status field for editing */}
+          {isEditing && (
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="backlog">Backlog</SelectItem>
+                      <SelectItem value="ready">Ready</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="review">Review</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Current task status
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           
           {!isProductIdea && (
             <>

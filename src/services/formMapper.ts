@@ -1,4 +1,3 @@
-
 import { Epic, Task, ProductIdea } from '../models/database';
 
 // Map EpicSubmissionForm data to Epic database model
@@ -20,29 +19,36 @@ export function mapEpicFormToDatabase(formData: {
 }
 
 // Map TaskSubmissionForm data to Task database model
-export function mapTaskFormToDatabase(formData: {
-  title: string;
-  description: string;
-  epic?: string;
-  assignee?: string;
-  estimation: number;
-  priority: 'low' | 'medium' | 'high';
-  assigned_date?: string;
-  completion_date?: string;
-}, userId: string, isProductIdea: boolean = false): Omit<Task, 'id' | 'created_at' | 'updated_at' | 'status'> {
+export function mapTaskFormToDatabase(
+  formData: {
+    title: string;
+    description: string;
+    epic?: string;
+    assignee?: string;
+    estimation: number;
+    priority: "low" | "medium" | "high";
+    status?: string;
+    assigned_date?: string;
+    completion_date?: string;
+  }, 
+  userId: string,
+  isProductIdea: boolean = false
+): Task {
+  // In a real app, you'd have proper validation and error handling
   return {
     title: formData.title,
     description: formData.description,
     epic_id: formData.epic,
-    assignee_id: formData.assignee,
+    assignee_id: formData.assignee || undefined,
     estimation: formData.estimation,
     priority: formData.priority,
+    status: formData.status as Task['status'] || (isProductIdea ? 'backlog' : 'ready'),
     assigned_date: formData.assigned_date,
     completion_date: formData.completion_date,
     is_product_idea: isProductIdea,
     created_by: userId,
-    owner_id: userId, // Default owner to creator
-    team_members: [], // Initialize empty team members array
+    owner_id: userId,  // Set the owner to the current user
+    team_members: [], // Initialize with empty array
   };
 }
 

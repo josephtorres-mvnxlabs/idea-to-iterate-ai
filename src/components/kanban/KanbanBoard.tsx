@@ -75,6 +75,22 @@ const mapUIStatusToDBStatus = (uiStatus: "todo" | "inProgress" | "done"): DBTask
   }
 };
 
+// Map DB status to UI status (for the edit form)
+const mapDBStatusToUIStatus = (dbStatus: string): string => {
+  switch(dbStatus) {
+    case "ready":
+    case "backlog":
+      return "todo";
+    case "in_progress":
+    case "review":
+      return "inProgress";
+    case "done":
+      return "done";
+    default:
+      return dbStatus;
+  }
+};
+
 export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardProps) {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -307,6 +323,7 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
               assignee: editingTask.assignee?.id || "",
               estimation: editingTask.estimation,
               priority: editingTask.priority || "medium",
+              status: editingTask.status as any, // Pass the current status
               assigned_date: editingTask.assigned_date ? new Date(editingTask.assigned_date) : undefined,
               completion_date: editingTask.completion_date ? new Date(editingTask.completion_date) : undefined
             } : undefined}
