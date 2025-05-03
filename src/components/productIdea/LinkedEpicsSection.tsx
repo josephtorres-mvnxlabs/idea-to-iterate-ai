@@ -45,8 +45,9 @@ export function LinkedEpicsSection({
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { toast } = useToast();
   
-  // Fixed the type to match what EpicSubmissionForm expects
-  const handleEpicCreationSuccess = (epicData: { id: string, title: string }) => {
+  // The issue appears to be with the EpicSubmissionForm's onSuccess prop type
+  // Adjusting our function to match what EpicSubmissionForm expects
+  const handleEpicCreationSuccess = React.useCallback((epicData: { id: string, title: string }) => {
     setIsDialogOpen(false);
     
     // Link the new epic to this product idea if we have an idea ID
@@ -72,7 +73,7 @@ export function LinkedEpicsSection({
     if (onNewEpicCreated) {
       onNewEpicCreated(epicData.title);
     }
-  };
+  }, [ideaId, onEpicLinked, onNewEpicCreated, toast]);
   
   const handleUnlinkEpic = async (epicId: string, epicTitle: string) => {
     if (!ideaId) return;
