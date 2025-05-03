@@ -24,16 +24,19 @@ const EpicsAndTasks = () => {
   const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
   const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
-  // Fetch product ideas
+  // Fetch product ideas - Fixed useQuery without the onError in options
   const { data: productIdeas = MOCK_PRODUCT_IDEAS } = useQuery({
     queryKey: ['productIdeas'],
     queryFn: () => productIdeaApi.getAll(),
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to load product ideas",
-        variant: "destructive",
-      });
+    // The onError callback needs to be moved to meta.onError in newer versions of react-query
+    meta: {
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to load product ideas",
+          variant: "destructive",
+        });
+      }
     }
   });
 

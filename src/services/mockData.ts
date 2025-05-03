@@ -1,5 +1,4 @@
-
-import { Epic, Task, User } from "@/models/database";
+import { Epic, Task, User, ProductIdea } from "@/models/database";
 
 // Sample users data for assignee dropdown
 export const MOCK_USERS: User[] = [
@@ -26,6 +25,49 @@ export const MOCK_USERS: User[] = [
     avatar_url: "https://i.pravatar.cc/150?img=3",
     role: "member",
     created_at: "2024-01-03T00:00:00Z",
+  },
+];
+
+// Sample product ideas data
+export const MOCK_PRODUCT_IDEAS: ProductIdea[] = [
+  {
+    id: "idea-1",
+    title: "Mobile App Redesign",
+    description: "Redesign the mobile app for better user experience and performance",
+    estimation: 45,
+    priority: "high",
+    status: "approved",
+    owner_id: "user-1",
+    team_members: ["user-2", "user-3"],
+    created_by: "user-1",
+    created_at: "2024-01-05T00:00:00Z",
+    updated_at: "2024-01-10T00:00:00Z",
+  },
+  {
+    id: "idea-2",
+    title: "AI-powered Recommendations",
+    description: "Implement AI-driven product recommendations across the platform",
+    estimation: 30,
+    priority: "medium",
+    status: "proposed",
+    owner_id: "user-2",
+    team_members: ["user-1"],
+    created_by: "user-2",
+    created_at: "2024-02-15T00:00:00Z",
+    updated_at: "2024-02-15T00:00:00Z",
+  },
+  {
+    id: "idea-3",
+    title: "Marketplace Integration",
+    description: "Add third-party marketplace integration for expanded product catalog",
+    estimation: 60,
+    priority: "low",
+    status: "under_review",
+    owner_id: "user-3",
+    team_members: ["user-1", "user-2"],
+    created_by: "user-3",
+    created_at: "2024-03-20T00:00:00Z",
+    updated_at: "2024-03-25T00:00:00Z",
   },
 ];
 
