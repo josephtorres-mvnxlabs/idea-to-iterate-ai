@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserManagement } from "@/components/UserManagement";
+import StatusConfigurationPanel from "@/components/settings/StatusConfigurationPanel";
 
 const userSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -90,6 +90,7 @@ const Settings = () => {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="company">Company</TabsTrigger>
           <TabsTrigger value="users">Users & Teams</TabsTrigger>
+          <TabsTrigger value="statuses">Status Management</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
         
@@ -311,6 +312,10 @@ const Settings = () => {
         
         <TabsContent value="users">
           <UserManagement />
+        </TabsContent>
+        
+        <TabsContent value="statuses">
+          <StatusConfigurationPanel />
         </TabsContent>
         
         <TabsContent value="integrations">
