@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -301,7 +300,8 @@ export function TaskSubmissionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    {/* Fixed: Changed empty string to "unassigned" to avoid the error */}
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {users?.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}
