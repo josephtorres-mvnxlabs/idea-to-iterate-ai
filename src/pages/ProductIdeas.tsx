@@ -1,8 +1,7 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, Lightbulb } from "lucide-react";
+import { Plus, Filter, Lightbulb, LayoutGrid, LayoutList, Kanban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,6 +9,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
+import { ProductIdeaBoard } from "@/components/ProductIdeaBoard";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -106,9 +106,15 @@ const ProductIdeas = () => {
                 <span className="text-sm">View:</span>
                 <Tabs defaultValue="cards">
                   <TabsList className="h-8">
-                    <TabsTrigger value="cards" className="text-xs px-3">Cards</TabsTrigger>
-                    <TabsTrigger value="list" className="text-xs px-3">List</TabsTrigger>
-                    <TabsTrigger value="board" className="text-xs px-3">Board</TabsTrigger>
+                    <TabsTrigger value="cards" className="text-xs px-3 flex items-center">
+                      <LayoutGrid className="h-3 w-3 mr-1" /> Cards
+                    </TabsTrigger>
+                    <TabsTrigger value="list" className="text-xs px-3 flex items-center">
+                      <LayoutList className="h-3 w-3 mr-1" /> List
+                    </TabsTrigger>
+                    <TabsTrigger value="board" className="text-xs px-3 flex items-center">
+                      <Kanban className="h-3 w-3 mr-1" /> Board
+                    </TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -117,10 +123,10 @@ const ProductIdeas = () => {
         </Card>
         
         <Tabs defaultValue="cards" className="w-full">
-          <TabsContent value="cards">
+          <TabsContent value="cards" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mockIdeas.map((idea) => (
-                <Card key={idea.id}>
+                <Card key={idea.id} className="hover-scale">
                   <CardHeader>
                     <div className="flex justify-between">
                       <Badge className={
@@ -173,7 +179,7 @@ const ProductIdeas = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="list">
+          <TabsContent value="list" className="animate-fade-in">
             <Card>
               <CardContent className="pt-6">
                 <div className="relative w-full overflow-auto">
@@ -191,8 +197,8 @@ const ProductIdeas = () => {
                     </thead>
                     <tbody>
                       {mockIdeas.map((idea) => (
-                        <tr key={idea.id} className="border-b">
-                          <td className="p-2 align-middle">{idea.title}</td>
+                        <tr key={idea.id} className="border-b hover:bg-muted/50 cursor-pointer">
+                          <td className="p-2 align-middle font-medium">{idea.title}</td>
                           <td className="p-2 align-middle">
                             <Badge className={
                               idea.status === 'proposed' ? 'bg-blue-100 text-blue-800' :
@@ -239,18 +245,8 @@ const ProductIdeas = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="board">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-10">
-                  <Lightbulb className="mx-auto h-10 w-10 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">Kanban Board View</h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Product ideas board view is coming soon. This will allow dragging and dropping ideas between status columns.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="board" className="animate-fade-in">
+            <ProductIdeaBoard ideas={mockIdeas} />
           </TabsContent>
         </Tabs>
       </div>
