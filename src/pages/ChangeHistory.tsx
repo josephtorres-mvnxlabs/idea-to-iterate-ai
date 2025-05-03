@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import MainLayout from '../components/MainLayout';
+import { MainLayout } from '../components/MainLayout';
 import ChangeLogViewer from '../components/ChangeLogViewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
