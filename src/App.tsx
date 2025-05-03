@@ -12,6 +12,7 @@ import Reports from "./pages/Reports";
 import Team from "./pages/Team";
 import TeamMemberProfile from "./pages/TeamMemberProfile";
 import Settings from "./pages/Settings";
+import ChangeHistory from "./pages/ChangeHistory";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/team" element={<Team />} />
           <Route path="/team/profile/:id" element={<TeamMemberProfile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/change-history" element={<ChangeHistory />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

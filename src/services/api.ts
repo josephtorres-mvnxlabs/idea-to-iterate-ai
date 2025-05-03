@@ -2,6 +2,8 @@
 import { Epic, Task, User, ProductIdea, TABLES, EpicWithTasks, ProductIdeaWithEpics } from '../models/database';
 import { MOCK_TASKS, MOCK_EPICS, MOCK_USERS } from './mockData';
 import { USE_MOCK_DATA, API_BASE_URL } from '../config/apiConfig';
+import { changeLogApi } from './changeLogApi';
+import { compareObjects, getCreationChanges, createStatusChange } from '../utils/changeTracker';
 
 // Generic fetch wrapper with error handling
 async function fetchAPI<T>(
@@ -397,5 +399,6 @@ export default {
   epics: epicApi,
   tasks: taskApi,
   users: userApi,
-  productIdeas: productIdeaApi
+  productIdeas: productIdeaApi,
+  changeLogs: changeLogApi
 };

@@ -66,6 +66,17 @@ export interface ProductIdeaEpicLink {
   created_at: string;
 }
 
+// Change Log interface for tracking modifications
+export interface ChangeLogEntry {
+  id: string;
+  entity_type: 'user' | 'epic' | 'task' | 'product_idea';
+  entity_id: string;
+  operation: 'create' | 'update' | 'delete' | 'status_change' | 'link' | 'unlink';
+  user_id: string; // Who made the change
+  changes: { field: string; old_value?: any; new_value: any }[];
+  created_at: string;
+}
+
 // Database Views / Aggregations
 export interface EpicWithTasks extends Epic {
   tasks: Task[];
@@ -93,5 +104,6 @@ export const TABLES = {
   EPICS: 'epics',
   TASKS: 'tasks',
   PRODUCT_IDEAS: 'product_ideas',
-  PRODUCT_IDEA_EPIC_LINKS: 'product_idea_epic_links'
+  PRODUCT_IDEA_EPIC_LINKS: 'product_idea_epic_links',
+  CHANGE_LOGS: 'change_logs'
 };
