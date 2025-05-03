@@ -162,13 +162,15 @@ export function KanbanBoard() {
   }, [selectedEpic]);
   
   return (
-    <div className="w-full animate-fade-in">
+    <div className="w-full animate-fade-in rounded-md bg-white/80 p-4 border border-gray-100 shadow-sm">
       <Tabs defaultValue="kanban" className="w-full">
         <div className="flex justify-between items-center mb-6">
-          <TabsList>
-            <TabsTrigger value="kanban">Kanban Board</TabsTrigger>
-            <TabsTrigger value="list">List View</TabsTrigger>
-          </TabsList>
+          <div className="hidden">
+            <TabsList>
+              <TabsTrigger value="kanban">Kanban Board</TabsTrigger>
+              <TabsTrigger value="list">List View</TabsTrigger>
+            </TabsList>
+          </div>
           <div className="flex items-center space-x-2">
             {selectedEpic && (
               <div className="flex items-center gap-3">
@@ -187,7 +189,7 @@ export function KanbanBoard() {
           </div>
         </div>
         
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2 hidden">
           {uniqueEpics.map(epic => (
             <Badge 
               key={epic}

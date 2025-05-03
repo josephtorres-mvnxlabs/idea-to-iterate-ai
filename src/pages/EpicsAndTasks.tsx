@@ -3,7 +3,7 @@ import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter } from "lucide-react";
+import { Plus, Filter, ListTodo, SquareKanban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
+import { Separator } from "@/components/ui/separator";
 
 const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
@@ -52,7 +53,14 @@ const EpicsAndTasks = () => {
           </div>
         </div>
         
-        <Card className="mb-6">
+        {/* Epics Section with visual distinction */}
+        <div className="bg-gradient-to-r from-devops-purple/5 to-transparent p-1 rounded-t-lg border-b-2 border-devops-purple/30">
+          <h2 className="text-lg font-semibold flex items-center ml-2 mb-1 text-devops-purple-dark">
+            <SquareKanban className="h-5 w-5 mr-2" />
+            Epics
+          </h2>
+        </div>
+        <Card className="mb-6 rounded-t-none bg-devops-purple/5">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
               <CardTitle>Active Epics</CardTitle>
@@ -79,18 +87,25 @@ const EpicsAndTasks = () => {
               <div className="text-sm text-muted-foreground">
                 {selectedEpic ? `Showing tasks for: ${selectedEpic}` : 'Showing all tasks'}
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm">View:</span>
-                <Tabs defaultValue="kanban">
-                  <TabsList className="h-8">
-                    <TabsTrigger value="kanban" className="text-xs px-3">Kanban</TabsTrigger>
-                    <TabsTrigger value="list" className="text-xs px-3">List</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
             </div>
           </CardContent>
         </Card>
+        
+        {/* Tasks Section with visual distinction */}
+        <div className="bg-gradient-to-r from-devops-gray/20 to-transparent p-1 rounded-t-lg border-b-2 border-devops-gray/30 mt-8">
+          <h2 className="text-lg font-semibold flex items-center ml-2 mb-1 text-devops-gray-dark">
+            <ListTodo className="h-5 w-5 mr-2" />
+            Tasks
+          </h2>
+          <div className="flex justify-end pr-2">
+            <Tabs defaultValue="kanban" className="h-8">
+              <TabsList className="h-8">
+                <TabsTrigger value="kanban" className="text-xs px-3">Kanban</TabsTrigger>
+                <TabsTrigger value="list" className="text-xs px-3">List</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
         
         <KanbanBoard />
       </div>
