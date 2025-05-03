@@ -2,26 +2,78 @@
 import * as React from "react";
 import { TaskCard } from "./TaskCard";
 import { KanbanColumn } from "./KanbanColumn";
-import { KanbanBoardProps, Task } from "./types";
+import { KanbanBoardProps, Task as UITask } from "./types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { useQuery } from "@tanstack/react-query";
 import { taskApi } from "@/services/api";
+import { Task as DBTask } from "@/models/database";
+
+// Mapping function to convert database task to UI task
+const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
+  // Helper to extract initials
+  const getInitials = (name: string) => 
+    name.split(" ")
+      .map(part => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  
+  // Map database status to UI status
+  const mapStatus = (dbStatus: string): "todo" | "inProgress" | "done" => {
+    switch(dbStatus) {
+      case "backlog":
+      case "ready":
+        return "todo";
+      case "in_progress":
+      case "review":
+        return "inProgress";
+      case "done":
+        return "done";
+      default:
+        return "todo"; // Default case
+    }
+  };
+  
+  return {
+    id: dbTask.id,
+    title: dbTask.title,
+    description: dbTask.description,
+    status: mapStatus(dbTask.status),
+    estimation: dbTask.estimation,
+    // Safely handle assignee data
+    assignee: {
+      name: dbTask.assignee_id ? "Assigned User" : "Unassigned", // This would ideally come from actual user data
+      initials: dbTask.assignee_id ? "AU" : "UA", // This would ideally be generated from user name
+      ...(dbTask.assignee_id && { id: dbTask.assignee_id }),
+    },
+    // Extract epic ID and title
+    epic: dbTask.epic_id || "",
+    priority: dbTask.priority || "medium",
+  };
+};
 
 export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardProps) {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
-  const [editingTask, setEditingTask] = React.useState<Task | null>(null);
+  const [editingTask, setEditingTask] = React.useState<UITask | null>(null);
 
-  const { data: tasks = [], isLoading } = useQuery({
+  // Get tasks from API and map them to UI model
+  const { data: dbTasks = [], isLoading } = useQuery({
     queryKey: ['tasks', { epic: selectedEpic }],
     queryFn: () => taskApi.getAll({ epic: selectedEpic }),
   });
+
+  // Map database tasks to UI tasks
+  const tasks = React.useMemo(() => 
+    dbTasks.map(mapDatabaseTaskToUITask), 
+    [dbTasks]
+  );
 
   const todoTasks = tasks.filter(task => task.status === "todo");
   const inProgressTasks = tasks.filter(task => task.status === "inProgress");
   const doneTasks = tasks.filter(task => task.status === "done");
 
-  const handleEditTask = (task: Task) => {
+  const handleEditTask = (task: UITask) => {
     setEditingTask(task);
     setIsTaskDialogOpen(true);
   };

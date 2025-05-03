@@ -9,11 +9,13 @@ export interface Task {
   estimation: number;
   actual?: number;
   assignee: {
+    id?: string;
     name: string;
     avatar?: string;
     initials: string;
   };
   epic: string;
+  priority?: "low" | "medium" | "high";
 }
 
 export interface TaskCardProps {
