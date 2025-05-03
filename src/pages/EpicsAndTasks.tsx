@@ -44,6 +44,7 @@ const EpicsAndTasks = () => {
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
   const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
   const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
+  const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
   const handleEditEpic = (epicTitle: string) => {
     const epic = SAMPLE_EPICS.find(e => e.title === epicTitle);
@@ -144,16 +145,27 @@ const EpicsAndTasks = () => {
             Tasks
           </h2>
           <div className="flex justify-end pr-2">
-            <Tabs defaultValue="kanban" className="h-8">
+            <Tabs 
+              defaultValue={viewMode} 
+              value={viewMode} 
+              onValueChange={(value) => setViewMode(value as "kanban" | "list")} 
+              className="h-8"
+            >
               <TabsList className="h-8">
-                <TabsTrigger value="kanban" className="text-xs px-3">Kanban</TabsTrigger>
-                <TabsTrigger value="list" className="text-xs px-3">List</TabsTrigger>
+                <TabsTrigger value="kanban" className="text-xs px-3 flex items-center">
+                  <SquareKanban className="h-3 w-3 mr-1" />
+                  Kanban
+                </TabsTrigger>
+                <TabsTrigger value="list" className="text-xs px-3 flex items-center">
+                  <ListTodo className="h-3 w-3 mr-1" />
+                  List
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
         </div>
         
-        <KanbanBoard selectedEpic={selectedEpic} />
+        <KanbanBoard selectedEpic={selectedEpic} viewMode={viewMode} />
       </div>
 
       {/* Task Submission Dialog */}

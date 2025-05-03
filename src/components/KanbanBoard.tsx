@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +26,7 @@ interface Task {
 
 interface KanbanBoardProps {
   selectedEpic?: string;
+  viewMode: "kanban" | "list";
 }
 
 const SAMPLE_TASKS: Task[] = [
@@ -141,7 +141,7 @@ function calculateEpicProgress(tasks: Task[]): number {
   return Math.round((completedTasks / tasks.length) * 100);
 }
 
-export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
+export function KanbanBoard({ selectedEpic, viewMode }: KanbanBoardProps) {
   // Set internal state based on prop
   const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
@@ -191,7 +191,7 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
   
   return (
     <div className="w-full animate-fade-in rounded-md bg-white/80 p-4 border border-gray-100 shadow-sm">
-      <Tabs defaultValue="kanban" className="w-full">
+      <Tabs value={viewMode} className="w-full">
         <div className="flex justify-between items-center mb-6">
           <div className="hidden">
             <TabsList>
@@ -217,19 +217,6 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
           </div>
         </div>
         
-        <div className="mb-4 flex flex-wrap gap-2 hidden">
-          {uniqueEpics.map(epic => (
-            <Badge 
-              key={epic}
-              variant="outline" 
-              className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpicState === epic ? 'bg-devops-purple/20 border-devops-purple' : ''}`}
-              onClick={() => setSelectedEpicState(epic === selectedEpicState ? undefined : epic)}
-            >
-              {epic}
-            </Badge>
-          ))}
-        </div>
-        
         <TabsContent value="kanban" className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* To Do Column */}
@@ -240,7 +227,7 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                   {filteredTasks.filter(t => t.status === "todo").length}
                 </Badge>
               </div>
-              <div className="kanban-column">
+              <div className="kanban-column space-y-3">
                 {filteredTasks
                   .filter(task => task.status === "todo")
                   .map(task => (
@@ -262,7 +249,7 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                   {filteredTasks.filter(t => t.status === "inProgress").length}
                 </Badge>
               </div>
-              <div className="kanban-column">
+              <div className="kanban-column space-y-3">
                 {filteredTasks
                   .filter(task => task.status === "inProgress")
                   .map(task => (
@@ -284,7 +271,7 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                   {filteredTasks.filter(t => t.status === "done").length}
                 </Badge>
               </div>
-              <div className="kanban-column">
+              <div className="kanban-column space-y-3">
                 {filteredTasks
                   .filter(task => task.status === "done")
                   .map(task => (
@@ -300,7 +287,7 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
           </div>
         </TabsContent>
         
-        <TabsContent value="list">
+        <TabsContent value="list" className="block">
           <div className="space-y-3">
             {filteredTasks.map(task => (
               <TaskCard 
@@ -346,17 +333,19 @@ interface TaskCardProps {
 
 function TaskCard({ task, listView, onEdit }: TaskCardProps) {
   return (
-    <Card className={`task-card relative ${listView ? 'flex justify-between items-center' : ''}`}>
+    <Card className={`task-card relative group ${listView ? 'flex justify-between items-center p-3' : 'p-4'}`}>
       <div className="w-full">
         <div className={`flex ${listView ? 'items-center' : 'flex-col space-y-2'}`}>
           <div className={`${listView ? 'flex-1' : 'w-full'}`}>
             <h4 className="font-medium">{task.title}</h4>
-            {!listView && task.description && (
-              <p className="text-xs text-muted-foreground mt-1">{task.description}</p>
+            {(!listView || task.description) && (
+              <p className={`text-xs text-muted-foreground ${listView ? 'hidden sm:inline ml-2' : 'mt-1'}`}>
+                {task.description || "No description"}
+              </p>
             )}
           </div>
           
-          <div className={`flex ${listView ? 'items-center space-x-4' : 'justify-between mt-3'}`}>
+          <div className={`flex ${listView ? 'items-center space-x-4 ml-2' : 'justify-between mt-3'}`}>
             <div className="flex items-center space-x-2">
               <Badge 
                 variant={task.status === "done" ? "outline" : "outline"} 
@@ -385,11 +374,11 @@ function TaskCard({ task, listView, onEdit }: TaskCardProps) {
         </div>
       </div>
       
-      {/* Edit button */}
+      {/* Edit button - made more visible */}
       <Button 
         variant="ghost" 
         size="icon" 
-        className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-50 hover:bg-gray-100"
         onClick={(e) => {
           e.stopPropagation();
           if (onEdit) onEdit();
