@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Separator } from "@/components/ui/separator";
@@ -132,10 +132,12 @@ const EpicsAndTasks = () => {
       {/* Task Submission Dialog */}
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
-          <DialogTitle>Create New Task</DialogTitle>
-          <DialogDescription>
-            Create a new task and assign it to an epic
-          </DialogDescription>
+          <DialogHeader>
+            <DialogTitle>Create New Task</DialogTitle>
+            <DialogDescription>
+              Create a new task and assign it to an epic
+            </DialogDescription>
+          </DialogHeader>
           <TaskSubmissionForm 
             onSuccess={() => setIsTaskDialogOpen(false)} 
             onCancel={() => setIsTaskDialogOpen(false)}
@@ -147,11 +149,13 @@ const EpicsAndTasks = () => {
 
       {/* Epic Submission Dialog */}
       <Dialog open={isEpicDialogOpen} onOpenChange={setIsEpicDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogTitle>Create New Epic</DialogTitle>
-          <DialogDescription>
-            Create a new epic to organize related tasks
-          </DialogDescription>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle>Create New Epic</DialogTitle>
+            <DialogDescription>
+              Create a new epic to organize related tasks
+            </DialogDescription>
+          </DialogHeader>
           <EpicSubmissionForm 
             onSuccess={() => setIsEpicDialogOpen(false)} 
             onCancel={() => setIsEpicDialogOpen(false)} 
@@ -161,11 +165,13 @@ const EpicsAndTasks = () => {
 
       {/* Epic Edit Dialog */}
       <Dialog open={isEditEpicDialogOpen} onOpenChange={setIsEditEpicDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogTitle>Edit Epic</DialogTitle>
-          <DialogDescription>
-            Edit epic details and manage associated tasks
-          </DialogDescription>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle>Edit Epic</DialogTitle>
+            <DialogDescription>
+              Edit epic details and manage associated tasks
+            </DialogDescription>
+          </DialogHeader>
           <EpicSubmissionForm 
             onSuccess={() => setIsEditEpicDialogOpen(false)} 
             onCancel={() => setIsEditEpicDialogOpen(false)} 

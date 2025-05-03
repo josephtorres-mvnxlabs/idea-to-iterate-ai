@@ -13,11 +13,14 @@ import { mapEpicFormToDatabase } from "@/services/formMapper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Task } from "@/models/database";
 import { Separator } from "@/components/ui/separator";
-import { Plus, ListTodo } from "lucide-react";
+import { Plus, ListTodo, Save, X } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "./TaskSubmissionForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { DialogHeader, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 const epicFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -39,9 +42,10 @@ interface EpicSubmissionFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   initialValues?: Partial<EpicFormValues>;
+  useSheet?: boolean;
 }
 
-export function EpicSubmissionForm({ onSuccess, onCancel, initialValues }: EpicSubmissionFormProps) {
+export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useSheet = false }: EpicSubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [epicTasks, setEpicTasks] = React.useState<Task[]>([]);
@@ -174,97 +178,99 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues }: EpicS
     // In a real app, we would refresh the task list
   };
 
-  return (
+  const formContent = (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <h2 className="text-2xl font-bold mb-4">{isEditing ? 'Edit Epic' : 'Create New Epic'}</h2>
-        
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Epic Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter epic title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe the epic and its goals" 
-                  className="min-h-[100px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormDescription>
-                Provide a clear description of what this epic aims to achieve
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="capability_category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Capability Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Epic Title</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a capability category" />
-                  </SelectTrigger>
+                  <Input placeholder="Enter epic title" {...field} />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="frontend">Frontend</SelectItem>
-                  <SelectItem value="backend">Backend</SelectItem>
-                  <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                  <SelectItem value="data">Data</SelectItem>
-                  <SelectItem value="security">Security</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Select the primary capability area this epic addresses
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="estimation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estimated Duration (days)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  min="1" 
-                  placeholder="Estimated completion time in days"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 14)} 
-                />
-              </FormControl>
-              <FormDescription>
-                Approximate time needed to complete all tasks in this epic
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Describe the epic and its goals" 
+                    className="min-h-[100px]" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Provide a clear description of what this epic aims to achieve
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="capability_category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Capability Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a capability category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="frontend">Frontend</SelectItem>
+                      <SelectItem value="backend">Backend</SelectItem>
+                      <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                      <SelectItem value="data">Data</SelectItem>
+                      <SelectItem value="security">Security</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select the primary capability area this epic addresses
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="estimation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estimated Duration (days)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="1" 
+                      placeholder="Estimated completion time in days"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 14)} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Approximate time needed to complete all tasks in this epic
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         {isEditing && (
           <>
@@ -286,8 +292,8 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues }: EpicS
                 </Button>
               </div>
               
-              {epicTasks.length > 0 ? (
-                <div className="rounded-md border">
+              <ScrollArea className="h-[200px] rounded-md border">
+                {epicTasks.length > 0 ? (
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -326,74 +332,120 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues }: EpicS
                       ))}
                     </TableBody>
                   </Table>
-                </div>
-              ) : (
-                <div className="text-center py-6 border rounded-md bg-gray-50">
-                  <p className="text-muted-foreground">No tasks found for this epic.</p>
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddTask}
-                    className="mt-2"
-                  >
-                    <Plus className="h-4 w-4 mr-1" /> Add your first task
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center py-6 border rounded-md bg-gray-50">
+                    <p className="text-muted-foreground">No tasks found for this epic.</p>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTask}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add your first task
+                    </Button>
+                  </div>
+                )}
+              </ScrollArea>
             </div>
           </>
         )}
-
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" type="button" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            className="bg-devops-purple hover:bg-devops-purple-dark"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Epic' : 'Create Epic')}
-          </Button>
-        </div>
       </form>
-      
-      {/* New Task Dialog */}
-      <Dialog open={isNewTaskDialogOpen} onOpenChange={setIsNewTaskDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogTitle>Add Task to Epic</DialogTitle>
-          <TaskSubmissionForm 
-            onSuccess={handleTaskSuccess} 
-            onCancel={() => setIsNewTaskDialogOpen(false)}
-            isProductIdea={false}
-            epicId={initialValues?.title}
-          />
-        </DialogContent>
-      </Dialog>
-      
-      {/* Edit Task Dialog */}
-      {selectedTask && (
-        <Dialog open={isEditTaskDialogOpen} onOpenChange={setIsEditTaskDialogOpen}>
+    </Form>
+  );
+
+  const actionButtons = (
+    <div className="flex justify-end space-x-2 pt-4 sticky bottom-0 bg-background pb-2">
+      <Button variant="outline" type="button" onClick={handleCancel}>
+        <X className="h-4 w-4 mr-1" />
+        Cancel
+      </Button>
+      <Button 
+        type="submit" 
+        className="bg-devops-purple hover:bg-devops-purple-dark"
+        disabled={isSubmitting}
+        onClick={form.handleSubmit(onSubmit)}
+      >
+        <Save className="h-4 w-4 mr-1" />
+        {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Save Epic' : 'Create Epic')}
+      </Button>
+    </div>
+  );
+  
+  // For modal dialog rendering
+  if (!useSheet) {
+    return (
+      <>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">{isEditing ? 'Edit Epic' : 'Create New Epic'}</h2>
+          {formContent}
+          {actionButtons}
+        </div>
+        
+        {/* New Task Dialog */}
+        <Dialog open={isNewTaskDialogOpen} onOpenChange={setIsNewTaskDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
-            <DialogTitle>Edit Task</DialogTitle>
+            <DialogHeader>
+              <DialogTitle>Add Task to Epic</DialogTitle>
+              <DialogDescription>
+                Create a new task and assign it to this epic
+              </DialogDescription>
+            </DialogHeader>
             <TaskSubmissionForm 
               onSuccess={handleTaskSuccess} 
-              onCancel={() => setIsEditTaskDialogOpen(false)}
+              onCancel={() => setIsNewTaskDialogOpen(false)}
               isProductIdea={false}
               epicId={initialValues?.title}
-              taskValues={{
-                title: selectedTask.title,
-                description: selectedTask.description || '',
-                epic: selectedTask.epic_id,
-                assignee: selectedTask.assignee_id,
-                estimation: selectedTask.estimation,
-                priority: selectedTask.priority,
-              }}
             />
           </DialogContent>
         </Dialog>
-      )}
-    </Form>
+        
+        {/* Edit Task Dialog */}
+        {selectedTask && (
+          <Dialog open={isEditTaskDialogOpen} onOpenChange={setIsEditTaskDialogOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Edit Task</DialogTitle>
+                <DialogDescription>
+                  Update task details for this epic
+                </DialogDescription>
+              </DialogHeader>
+              <TaskSubmissionForm 
+                onSuccess={handleTaskSuccess} 
+                onCancel={() => setIsEditTaskDialogOpen(false)}
+                isProductIdea={false}
+                epicId={initialValues?.title}
+                taskValues={{
+                  title: selectedTask.title,
+                  description: selectedTask.description || '',
+                  epic: selectedTask.epic_id,
+                  assignee: selectedTask.assignee_id,
+                  estimation: selectedTask.estimation,
+                  priority: selectedTask.priority,
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
+    );
+  }
+
+  // For sheet rendering (for smaller screens or alternate UI)
+  return (
+    <Sheet>
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+        <SheetHeader className="mb-5">
+          <SheetTitle>{isEditing ? 'Edit Epic' : 'Create New Epic'}</SheetTitle>
+          <SheetDescription>
+            {isEditing ? 'Update this epic and manage its tasks' : 'Create a new epic to organize related tasks'}
+          </SheetDescription>
+        </SheetHeader>
+        <div className="space-y-4">
+          {formContent}
+          {actionButtons}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
