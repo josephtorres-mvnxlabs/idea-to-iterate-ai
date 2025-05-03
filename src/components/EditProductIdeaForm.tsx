@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -48,7 +49,7 @@ const formSchema = z.object({
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
-  status: z.enum(["proposed", "under_review", "approved", "rejected"], {
+  status: z.enum(["proposed", "under_review", "approved", "rejected", "implemented"], {
     required_error: "Status is required",
   }),
   owner_id: z.string().min(1, "Owner is required"),
@@ -251,6 +252,7 @@ export function EditProductIdeaForm({
                     <SelectItem value="under_review">Under Review</SelectItem>
                     <SelectItem value="approved">Approved</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="implemented">Implemented</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
