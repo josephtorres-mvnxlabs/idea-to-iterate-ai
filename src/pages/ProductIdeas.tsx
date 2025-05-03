@@ -1,7 +1,8 @@
+
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, LayoutGrid, LayoutList, Kanban } from "lucide-react";
+import { Plus, Filter, LayoutGrid, LayoutList, Kanban, ArrowUpZA, ArrowDownAZ } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -12,6 +13,20 @@ import { ProductIdea } from "@/models/database";
 import { ProductIdeaBoard } from "@/components/ProductIdeaBoard";
 import { ProductIdeaDetail } from "@/components/ProductIdeaDetail";
 import { toast } from "sonner";
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -69,9 +84,16 @@ const mockIdeas: (ProductIdea & {
 
 const ProductIdeas = () => {
   const [isIdeaDialogOpen, setIsIdeaDialogOpen] = React.useState(false);
-  const [activeView, setActiveView] = React.useState("board"); // Changed default view from "cards" to "board"
+  const [activeView, setActiveView] = React.useState("board");
   const [selectedIdea, setSelectedIdea] = React.useState<(typeof mockIdeas)[0] | null>(null);
   const [ideas, setIdeas] = React.useState(mockIdeas);
+  const [sortConfig, setSortConfig] = React.useState<{
+    key: 'status' | 'priority' | null,
+    direction: 'asc' | 'desc'
+  }>({
+    key: null,
+    direction: 'asc'
+  });
   
   const handleIdeaClick = (idea: (typeof ideas)[0]) => {
     setSelectedIdea(idea);
@@ -89,6 +111,40 @@ const ProductIdeas = () => {
     );
     
     toast.success("Product idea updated successfully");
+  };
+  
+  const requestSort = (key: 'status' | 'priority') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+  
+  const getSortedIdeas = () => {
+    if (!sortConfig.key) return ideas;
+    
+    return [...ideas].sort((a, b) => {
+      if (a[sortConfig.key!] < b[sortConfig.key!]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key!] > b[sortConfig.key!]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+  
+  const sortedIdeas = getSortedIdeas();
+  
+  const getSortIcon = (key: 'status' | 'priority') => {
+    if (sortConfig.key !== key) return null;
+    
+    return sortConfig.direction === 'asc' 
+      ? <ArrowDownAZ className="h-3 w-3 ml-1" /> 
+      : <ArrowUpZA className="h-3 w-3 ml-1" />;
   };
   
   return (
@@ -214,27 +270,49 @@ const ProductIdeas = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="relative w-full overflow-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="h-10 px-2 text-left font-medium">Title</th>
-                        <th className="h-10 px-2 text-left font-medium">Status</th>
-                        <th className="h-10 px-2 text-left font-medium">Priority</th>
-                        <th className="h-10 px-2 text-left font-medium">Linked Epics</th>
-                        <th className="h-10 px-2 text-left font-medium">Progress</th>
-                        <th className="h-10 px-2 text-left font-medium">Tasks</th>
-                        <th className="h-10 px-2 text-left font-medium">Estimation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ideas.map((idea) => (
-                        <tr 
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center focus:outline-none">
+                              Status {getSortIcon('status')}
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => requestSort('status')}>
+                                Sort {sortConfig.key === 'status' && sortConfig.direction === 'asc' ? 'Descending' : 'Ascending'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableHead>
+                        <TableHead>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="flex items-center focus:outline-none">
+                              Priority {getSortIcon('priority')}
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => requestSort('priority')}>
+                                Sort {sortConfig.key === 'priority' && sortConfig.direction === 'asc' ? 'Descending' : 'Ascending'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableHead>
+                        <TableHead>Linked Epics</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead>Tasks</TableHead>
+                        <TableHead>Estimation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedIdeas.map((idea) => (
+                        <TableRow 
                           key={idea.id} 
-                          className="border-b hover:bg-muted/50 cursor-pointer"
+                          className="hover:bg-muted/50 cursor-pointer"
                           onClick={() => handleIdeaClick(idea)}
                         >
-                          <td className="p-2 align-middle font-medium">{idea.title}</td>
-                          <td className="p-2 align-middle">
+                          <TableCell className="font-medium">{idea.title}</TableCell>
+                          <TableCell>
                             <Badge className={
                               idea.status === 'proposed' ? 'bg-blue-100 text-blue-800' :
                               idea.status === 'under_review' ? 'bg-amber-100 text-amber-800' :
@@ -244,11 +322,11 @@ const ProductIdeas = () => {
                             }>
                               {idea.status.replace('_', ' ')}
                             </Badge>
-                          </td>
-                          <td className="p-2 align-middle">
+                          </TableCell>
+                          <TableCell>
                             <Badge variant="outline">{idea.priority}</Badge>
-                          </td>
-                          <td className="p-2 align-middle">
+                          </TableCell>
+                          <TableCell>
                             <div className="flex flex-wrap gap-1">
                               {idea.linkedEpics.length > 0 ? 
                                 idea.linkedEpics.map(epic => (
@@ -260,21 +338,21 @@ const ProductIdeas = () => {
                                 <span className="text-xs text-muted-foreground">None</span>
                               }
                             </div>
-                          </td>
-                          <td className="p-2 align-middle w-40">
+                          </TableCell>
+                          <TableCell className="w-40">
                             <div className="flex items-center gap-2">
                               <Progress value={idea.progress} className="h-2" />
                               <span className="text-xs">{idea.progress}%</span>
                             </div>
-                          </td>
-                          <td className="p-2 align-middle">
+                          </TableCell>
+                          <TableCell>
                             <span className="text-xs">{idea.completedTasks}/{idea.totalTasks}</span>
-                          </td>
-                          <td className="p-2 align-middle">{idea.estimation} days</td>
-                        </tr>
+                          </TableCell>
+                          <TableCell>{idea.estimation} days</TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
