@@ -48,6 +48,9 @@ const formSchema = z.object({
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
+  status: z.enum(["proposed", "under_review", "approved", "rejected"], {
+    required_error: "Status is required",
+  }),
   owner_id: z.string().min(1, "Owner is required"),
 });
 
@@ -97,6 +100,7 @@ export function EditProductIdeaForm({
       description: idea.description,
       estimation: idea.estimation,
       priority: idea.priority,
+      status: idea.status || "proposed",
       owner_id: idea.owner?.id || idea.owner_id || availableUsers[0].id,
     },
   });
@@ -214,20 +218,49 @@ export function EditProductIdeaForm({
               <FormItem>
                 <FormLabel>Priority</FormLabel>
                 <FormControl>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    {...field}
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+        
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="proposed">Proposed</SelectItem>
+                    <SelectItem value="under_review">Under Review</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription>
+                Current status of the product idea
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
         <FormField
           control={form.control}

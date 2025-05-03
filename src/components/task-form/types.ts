@@ -8,7 +8,7 @@ export const taskFormSchema = z.object({
   assignee: z.string().optional(),
   estimation: z.coerce.number().min(0).default(1),
   priority: z.enum(["low", "medium", "high"]),
-  status: z.enum(["backlog", "ready", "in_progress", "review", "done"]).optional(),
+  status: z.enum(["proposed", "under_review", "approved", "rejected", "backlog", "ready", "in_progress", "review", "done"]).optional(),
   assigned_date: z.date().optional().nullable(),
   completion_date: z.date().optional().nullable(),
 });
