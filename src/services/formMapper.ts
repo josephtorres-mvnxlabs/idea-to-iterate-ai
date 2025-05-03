@@ -14,6 +14,8 @@ export function mapEpicFormToDatabase(formData: {
     estimation: formData.estimation,
     capability_category: formData.capability_category,
     created_by: userId,
+    owner_id: userId, // Default owner to creator
+    team_members: [], // Initialize empty team members array
   };
 }
 
@@ -39,6 +41,8 @@ export function mapTaskFormToDatabase(formData: {
     completion_date: formData.completion_date,
     is_product_idea: isProductIdea,
     created_by: userId,
+    owner_id: userId, // Default owner to creator
+    team_members: [], // Initialize empty team members array
   };
 }
 
@@ -55,6 +59,8 @@ export function mapProductIdeaFormToDatabase(formData: {
     estimation: formData.estimation,
     priority: formData.priority,
     created_by: userId,
+    owner_id: userId, // Default owner to creator
+    team_members: [], // Initialize empty team members array
   };
 }
 

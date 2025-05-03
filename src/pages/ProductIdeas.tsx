@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { Progress } from "@/components/ui/progress";
-import { ProductIdea } from "@/models/database";
+import { ProductIdea, User } from "@/models/database";
 import { ProductIdeaBoard } from "@/components/ProductIdeaBoard";
 import { ProductIdeaDetail } from "@/components/ProductIdeaDetail";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { MOCK_USERS } from "@/services/mockData";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -43,6 +44,8 @@ const mockIdeas: (ProductIdea & {
     priority: 'high',
     status: 'under_review',
     created_by: 'user1',
+    owner_id: 'user-1',
+    team_members: ['user-2', 'user-3'],
     created_at: '2023-05-15T10:30:00Z',
     updated_at: '2023-05-15T10:30:00Z',
     linkedEpics: ['ML-Driven Recommendations', 'Performance Optimization Initiative'],
@@ -58,6 +61,8 @@ const mockIdeas: (ProductIdea & {
     priority: 'medium',
     status: 'approved',
     created_by: 'user2',
+    owner_id: 'user-2',
+    team_members: ['user-1'],
     created_at: '2023-06-02T14:45:00Z',
     updated_at: '2023-06-10T09:15:00Z',
     linkedEpics: ['Performance Optimization Initiative'],
@@ -73,6 +78,8 @@ const mockIdeas: (ProductIdea & {
     priority: 'high',
     status: 'proposed',
     created_by: 'user3',
+    owner_id: 'user-3',
+    team_members: [],
     created_at: '2023-07-10T11:20:00Z',
     updated_at: '2023-07-10T11:20:00Z',
     linkedEpics: [],
