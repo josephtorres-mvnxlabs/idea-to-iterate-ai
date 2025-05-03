@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
+import { Task } from "@/models/database";
 
 interface Task {
   id: string;
@@ -27,6 +28,7 @@ interface Task {
 interface KanbanBoardProps {
   selectedEpic?: string;
   viewMode: "kanban" | "list";
+  onEditTask?: (task: Task) => void;  // Added this prop to the interface
 }
 
 const SAMPLE_TASKS: Task[] = [
@@ -141,7 +143,7 @@ function calculateEpicProgress(tasks: Task[]): number {
   return Math.round((completedTasks / tasks.length) * 100);
 }
 
-export function KanbanBoard({ selectedEpic, viewMode }: KanbanBoardProps) {
+export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardProps) {
   // Set internal state based on prop
   const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
@@ -178,8 +180,14 @@ export function KanbanBoard({ selectedEpic, viewMode }: KanbanBoardProps) {
   }, [selectedEpicState]);
 
   const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsEditDialogOpen(true);
+    // If external edit handler is provided, use it
+    if (onEditTask) {
+      onEditTask(task);
+    } else {
+      // Otherwise use internal dialog
+      setSelectedTask(task);
+      setIsEditDialogOpen(true);
+    }
   };
   
   const handleEditSuccess = () => {
@@ -301,8 +309,8 @@ export function KanbanBoard({ selectedEpic, viewMode }: KanbanBoardProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Task Edit Dialog */}
-      {selectedTask && (
+      {/* Task Edit Dialog - only show if onEditTask prop is not provided */}
+      {!onEditTask && selectedTask && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogTitle>Edit Task</DialogTitle>
