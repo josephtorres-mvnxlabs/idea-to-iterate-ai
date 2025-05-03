@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
 import { ProductIdeaBoard } from "@/components/ProductIdeaBoard";
 import { ProductIdeaDetail } from "@/components/ProductIdeaDetail";
+import { toast } from "sonner";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -71,13 +71,24 @@ const ProductIdeas = () => {
   const [isIdeaDialogOpen, setIsIdeaDialogOpen] = React.useState(false);
   const [activeView, setActiveView] = React.useState("cards");
   const [selectedIdea, setSelectedIdea] = React.useState<(typeof mockIdeas)[0] | null>(null);
+  const [ideas, setIdeas] = React.useState(mockIdeas);
   
-  const handleIdeaClick = (idea: (typeof mockIdeas)[0]) => {
+  const handleIdeaClick = (idea: (typeof ideas)[0]) => {
     setSelectedIdea(idea);
   };
 
   const handleCloseDetail = () => {
     setSelectedIdea(null);
+  };
+  
+  const handleIdeaUpdate = (updatedIdea: (typeof ideas)[0]) => {
+    setIdeas(prevIdeas => 
+      prevIdeas.map(idea => 
+        idea.id === updatedIdea.id ? updatedIdea : idea
+      )
+    );
+    
+    toast.success("Product idea updated successfully");
   };
   
   return (
@@ -112,7 +123,7 @@ const ProductIdeas = () => {
           <CardContent>
             <div className="mt-2 flex justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                {mockIdeas.length} product ideas
+                {ideas.length} product ideas
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm">View:</span>
@@ -141,7 +152,7 @@ const ProductIdeas = () => {
         <Tabs value={activeView} className="w-full">
           <TabsContent value="cards" className="animate-fade-in mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockIdeas.map((idea) => (
+              {ideas.map((idea) => (
                 <Card 
                   key={idea.id} 
                   className="hover-scale cursor-pointer"
@@ -216,7 +227,7 @@ const ProductIdeas = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockIdeas.map((idea) => (
+                      {ideas.map((idea) => (
                         <tr 
                           key={idea.id} 
                           className="border-b hover:bg-muted/50 cursor-pointer"
@@ -271,7 +282,7 @@ const ProductIdeas = () => {
           
           <TabsContent value="board" className="animate-fade-in mt-0">
             <ProductIdeaBoard 
-              ideas={mockIdeas}
+              ideas={ideas}
               onIdeaClick={handleIdeaClick}
             />
           </TabsContent>
@@ -295,6 +306,7 @@ const ProductIdeas = () => {
         <ProductIdeaDetail 
           idea={selectedIdea} 
           onClose={handleCloseDetail} 
+          onUpdate={handleIdeaUpdate}
         />
       )}
     </MainLayout>
