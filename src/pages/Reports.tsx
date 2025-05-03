@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,7 @@ interface TimelineDataPoint {
   epic1Name?: string;
   epic2Name?: string;
   epic3Name?: string;
+  [key: string]: string | number | undefined; // Index signature to allow dynamic properties
 }
 
 const Reports = () => {
@@ -165,7 +167,7 @@ const Reports = () => {
     ];
   }, [tasks, isLoading]);
 
-  const timelineData = React.useMemo((): TimelineDataPoint[] => {
+  const timelineData = React.useMemo(() => {
     if (isLoading) return [];
     
     // We need to calculate tasks completed per day for last 5 days
@@ -179,11 +181,12 @@ const Reports = () => {
     // For each epic, distribute completed tasks across days (simulated distribution)
     // In a real app, we would use actual completion dates
     topEpics.forEach((epic, index) => {
-      const epicKey = `epic${index + 1}` as keyof TimelineDataPoint;
+      const epicNumber = index + 1;
+      const epicKey = `epic${epicNumber}` as keyof TimelineDataPoint;
+      const nameKey = `epic${epicNumber}Name` as keyof TimelineDataPoint;
       const totalCompleted = epic.completed;
       
       // Add epic name to result for legend
-      const nameKey = `epic${index + 1}Name` as keyof TimelineDataPoint;
       if (index === 0 && result.length > 0) {
         result[0][nameKey] = epic.name;
       }
