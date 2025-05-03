@@ -8,6 +8,8 @@ import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Task } from "@/models/database";
 import { useToast } from "@/hooks/use-toast";
 import { X, Save } from "lucide-react";
+import { epicApi } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface TaskEditDialogProps {
   open: boolean;
@@ -21,15 +23,26 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
   const [isCreatingEpic, setIsCreatingEpic] = useState(false);
   const [newEpicId, setNewEpicId] = React.useState<string | null>(null);
   
+  // Fetch the epic data to ensure we have the correct information
+  const { data: epics } = useQuery({
+    queryKey: ['epics'],
+    queryFn: epicApi.getAll,
+    enabled: open && !!task?.epic_id,
+  });
+  
   // Convert task to form values, ensuring the epic field is correctly set
-  const taskValues = task ? {
-    title: task.title,
-    description: task.description || "",
-    epic: task.epic_id,  // This ensures the form displays the correct epic
-    assignee: task.assignee_id,
-    estimation: task.estimation,
-    priority: task.priority,
-  } : undefined;
+  const taskValues = React.useMemo(() => {
+    if (!task) return undefined;
+    
+    return {
+      title: task.title,
+      description: task.description || "",
+      epic: task.epic_id,  // This ensures the form displays the correct epic
+      assignee: task.assignee_id,
+      estimation: task.estimation,
+      priority: task.priority,
+    };
+  }, [task]);
   
   const handleEpicCreationSuccess = (epicId: string) => {
     setNewEpicId(epicId);
@@ -66,7 +79,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
             onSuccess={handleTaskSuccess} 
             onCancel={() => onOpenChange(false)}
             isProductIdea={false}
-            // Don't pass epicId when editing, so the task's original epic can be used
+            // Only pass newEpicId if it's set, otherwise use task's existing epic
             epicId={newEpicId || undefined}
             taskValues={taskValues}
             onCreateNewEpic={handleCreateNewEpic}
@@ -84,7 +97,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
             </DialogDescription>
           </DialogHeader>
           <EpicSubmissionForm 
-            onSuccess={() => handleEpicCreationSuccess("new-epic-id")} 
+            onSuccess={(newEpicId) => handleEpicCreationSuccess(newEpicId)} 
             onCancel={() => setIsCreatingEpic(false)} 
           />
           <DialogFooter className="mt-4 pt-4 border-t">

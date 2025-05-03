@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -52,6 +51,19 @@ export function TaskSubmissionForm({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const isEditing = !!taskValues;
 
+  // For debugging purposes
+  React.useEffect(() => {
+    console.log("TaskSubmissionForm initialized with:", { 
+      epicId, 
+      taskValues,
+      isEditing
+    });
+    
+    if (taskValues) {
+      console.log("Task epic_id:", taskValues.epic);
+    }
+  }, [epicId, taskValues, isEditing]);
+
   // Fetch epics for dropdown
   const { data: epics } = useQuery({
     queryKey: ['epics'],
@@ -71,6 +83,8 @@ export function TaskSubmissionForm({
     // When editing a task, prefer the task's existing epic over any epicId prop
     const effectiveEpicId = taskValues?.epic || epicId;
     
+    console.log("Calculating form defaults with effectiveEpicId:", effectiveEpicId);
+    
     return {
       ...defaultValues,
       ...(taskValues || {}),
@@ -86,6 +100,8 @@ export function TaskSubmissionForm({
   // Effect to update form when values change
   React.useEffect(() => {
     if (formDefaultValues) {
+      console.log("Setting form values:", formDefaultValues);
+      
       Object.entries(formDefaultValues).forEach(([key, value]) => {
         if (value !== undefined) {
           form.setValue(key as keyof TaskFormValues, value as any);
@@ -95,6 +111,8 @@ export function TaskSubmissionForm({
   }, [formDefaultValues, form]);
 
   const handleEpicChange = (value: string) => {
+    console.log("Epic selection changed:", value);
+    
     if (value === "new" && onCreateNewEpic) {
       onCreateNewEpic();
     } else {
@@ -102,11 +120,22 @@ export function TaskSubmissionForm({
     }
   };
 
+  // Log current form value for debugging
+  React.useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log("Form current values:", value);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
       // In a real app, you'd get the user ID from auth context
       const userId = "current-user-id"; 
+      
+      console.log("Submitting form with data:", data);
       
       // Convert form data to database model - ensure all required fields are present
       const taskData = mapTaskFormToDatabase({
@@ -224,6 +253,7 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={handleEpicChange}
                   defaultValue={field.value}
+                  value={field.value}
                   // Only disable if it's a new task with a preselected epic, not when editing
                   disabled={!isEditing && !!epicId}
                 >
