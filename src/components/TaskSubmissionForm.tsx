@@ -34,11 +34,20 @@ interface TaskSubmissionFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   isProductIdea?: boolean;
+  epicId?: string;
+  taskValues?: Partial<TaskFormValues>;
 }
 
-export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false }: TaskSubmissionFormProps) {
+export function TaskSubmissionForm({ 
+  onSuccess, 
+  onCancel, 
+  isProductIdea = false,
+  epicId,
+  taskValues
+}: TaskSubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const isEditing = !!taskValues;
 
   // Fetch epics for dropdown
   const { data: epics } = useQuery({
@@ -54,9 +63,18 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
     placeholderData: [] as User[]
   });
 
+  // Create form values combining defaults, passed values, and preselected epic
+  const formDefaultValues = React.useMemo(() => {
+    return {
+      ...defaultValues,
+      ...(taskValues || {}),
+      ...(epicId && !taskValues?.epic ? { epic: epicId } : {})
+    };
+  }, [epicId, taskValues]);
+
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues,
+    defaultValues: formDefaultValues,
   });
 
   const onSubmit = async (data: TaskFormValues) => {
@@ -76,18 +94,27 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
       }, userId, isProductIdea);
       
       // Submit to API
-      await taskApi.create(taskData);
+      if (isEditing) {
+        // In a real app, we would update the task
+        // await taskApi.update(taskId, taskData);
+        toast({
+          title: "Task updated",
+          description: `Task "${data.title}" has been updated successfully.`,
+        });
+      } else {
+        await taskApi.create(taskData);
+        
+        const successMessage = isProductIdea 
+          ? `Product idea "${data.title}" has been created and will be curated to an epic.`
+          : `Task "${data.title}" has been created successfully.`;
+        
+        toast({
+          title: isProductIdea ? "Product idea created" : "Task created",
+          description: successMessage,
+        });
+      }
       
-      const successMessage = isProductIdea 
-        ? `Product idea "${data.title}" has been created and will be curated to an epic.`
-        : `Task "${data.title}" has been created successfully.`;
-      
-      toast({
-        title: isProductIdea ? "Product idea created" : "Task created",
-        description: successMessage,
-      });
-      
-      console.log(isProductIdea ? "Product idea submitted:" : "Task submitted:", data);
+      console.log(isEditing ? "Task updated:" : (isProductIdea ? "Product idea submitted:" : "Task submitted:"), data);
       form.reset();
       
       if (onSuccess) {
@@ -97,7 +124,7 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
       console.error("Failed to create task:", error);
       toast({
         title: "Error",
-        description: `Failed to create ${isProductIdea ? "product idea" : "task"}. Please try again.`,
+        description: `Failed to ${isEditing ? "update" : "create"} ${isProductIdea ? "product idea" : "task"}. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -116,7 +143,10 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <h2 className="text-2xl font-bold mb-4">
-          {isProductIdea ? "Create New Product Idea" : "Create New Task"}
+          {isEditing 
+            ? "Edit Task" 
+            : (isProductIdea ? "Create New Product Idea" : "Create New Task")
+          }
         </h2>
         
         <FormField
@@ -170,6 +200,7 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
+                    disabled={!!epicId}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -202,6 +233,7 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
+                    disabled={!!epicId}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -311,7 +343,10 @@ export function TaskSubmissionForm({ onSuccess, onCancel, isProductIdea = false 
             className="bg-devops-purple hover:bg-devops-purple-dark"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : isProductIdea ? "Submit Product Idea" : "Create Task"}
+            {isSubmitting 
+              ? (isEditing ? 'Updating...' : 'Submitting...') 
+              : (isEditing ? 'Update Task' : (isProductIdea ? "Submit Product Idea" : "Create Task"))
+            }
           </Button>
         </div>
       </form>

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Separator } from "@/components/ui/separator";
@@ -133,10 +133,14 @@ const EpicsAndTasks = () => {
       <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogTitle>Create New Task</DialogTitle>
+          <DialogDescription>
+            Create a new task and assign it to an epic
+          </DialogDescription>
           <TaskSubmissionForm 
             onSuccess={() => setIsTaskDialogOpen(false)} 
             onCancel={() => setIsTaskDialogOpen(false)}
             isProductIdea={false} 
+            epicId={selectedEpic}
           />
         </DialogContent>
       </Dialog>
@@ -145,6 +149,9 @@ const EpicsAndTasks = () => {
       <Dialog open={isEpicDialogOpen} onOpenChange={setIsEpicDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogTitle>Create New Epic</DialogTitle>
+          <DialogDescription>
+            Create a new epic to organize related tasks
+          </DialogDescription>
           <EpicSubmissionForm 
             onSuccess={() => setIsEpicDialogOpen(false)} 
             onCancel={() => setIsEpicDialogOpen(false)} 
@@ -156,6 +163,9 @@ const EpicsAndTasks = () => {
       <Dialog open={isEditEpicDialogOpen} onOpenChange={setIsEditEpicDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogTitle>Edit Epic</DialogTitle>
+          <DialogDescription>
+            Edit epic details and manage associated tasks
+          </DialogDescription>
           <EpicSubmissionForm 
             onSuccess={() => setIsEditEpicDialogOpen(false)} 
             onCancel={() => setIsEditEpicDialogOpen(false)} 

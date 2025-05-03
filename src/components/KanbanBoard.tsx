@@ -323,7 +323,13 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
               onSuccess={handleEditSuccess} 
               onCancel={() => setIsEditDialogOpen(false)}
               isProductIdea={false}
-              initialValues={selectedTask}
+              taskValues={{
+                title: selectedTask.title,
+                description: selectedTask.description || "",
+                epic: selectedTask.epic,
+                priority: "medium", // Default since our sample data doesn't have priority
+                estimation: selectedTask.estimation
+              }}
             />
           </DialogContent>
         </Dialog>
