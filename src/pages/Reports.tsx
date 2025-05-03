@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +28,37 @@ import { taskApi, epicApi, userApi } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 import { Task, Epic, User } from "@/models/database";
 import { differenceInDays } from "date-fns";
+
+// Define types for our chart data
+interface DeveloperPerformance {
+  name: string;
+  estimatedDays: number;
+  actualDays: number;
+  tasks: number;
+}
+
+interface EpicProgress {
+  name: string;
+  completed: number;
+  remaining: number;
+  total: number;
+}
+
+interface TaskStatusData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface TimelineDataPoint {
+  day: string;
+  epic1?: number;
+  epic2?: number;
+  epic3?: number;
+  epic1Name?: string;
+  epic2Name?: string;
+  epic3Name?: string;
+}
 
 const Reports = () => {
   const [timeframe, setTimeframe] = React.useState("lastMonth");
@@ -135,13 +165,13 @@ const Reports = () => {
     ];
   }, [tasks, isLoading]);
 
-  const timelineData = React.useMemo(() => {
+  const timelineData = React.useMemo((): TimelineDataPoint[] => {
     if (isLoading) return [];
     
     // We need to calculate tasks completed per day for last 5 days
     // Group tasks by epic and day of completion
     const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    const result = daysOfWeek.map(day => ({ day }));
+    const result: TimelineDataPoint[] = daysOfWeek.map(day => ({ day }));
     
     // Get top 3 epics by task count
     const topEpics = epicProgress.slice(0, 3);
@@ -149,8 +179,14 @@ const Reports = () => {
     // For each epic, distribute completed tasks across days (simulated distribution)
     // In a real app, we would use actual completion dates
     topEpics.forEach((epic, index) => {
-      const epicKey = `epic${index + 1}`;
+      const epicKey = `epic${index + 1}` as keyof TimelineDataPoint;
       const totalCompleted = epic.completed;
+      
+      // Add epic name to result for legend
+      const nameKey = `epic${index + 1}Name` as keyof TimelineDataPoint;
+      if (index === 0 && result.length > 0) {
+        result[0][nameKey] = epic.name;
+      }
       
       // Distribute completed tasks across days (mock distribution)
       let remaining = totalCompleted;
@@ -160,11 +196,6 @@ const Reports = () => {
         const value = Math.min(dayCompletions, remaining);
         day[epicKey] = value;
         remaining -= value;
-        
-        // Add epic name to result for legend
-        if (i === 0) {
-          result[0][`epic${index + 1}Name`] = epic.name;
-        }
       }
     });
     
@@ -352,13 +383,13 @@ const Reports = () => {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      {timelineData[0] && timelineData[0].epic1Name && (
+                      {timelineData[0]?.epic1Name && (
                         <Line type="monotone" dataKey="epic1" stroke="#9b87f5" name={timelineData[0].epic1Name} />
                       )}
-                      {timelineData[0] && timelineData[0].epic2Name && (
+                      {timelineData[0]?.epic2Name && (
                         <Line type="monotone" dataKey="epic2" stroke="#1EAEDB" name={timelineData[0].epic2Name} />
                       )}
-                      {timelineData[0] && timelineData[0].epic3Name && (
+                      {timelineData[0]?.epic3Name && (
                         <Line type="monotone" dataKey="epic3" stroke="#D6BCFA" name={timelineData[0].epic3Name} />
                       )}
                     </LineChart>
