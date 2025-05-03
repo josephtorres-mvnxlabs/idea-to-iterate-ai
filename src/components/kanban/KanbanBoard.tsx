@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ListTodo, Plus } from "lucide-react";
 import { TaskCard } from "./TaskCard";
@@ -10,18 +9,11 @@ import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskApi } from "@/services/api";
 import { Task as DBTask } from "@/models/database";
+import { getInitialsFromName } from "@/services/formMapper";
 import { toast } from "sonner";
 
 // Mapping function to convert database task to UI task
 const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
-  // Helper to extract initials
-  const getInitials = (name: string) => 
-    name.split(" ")
-      .map(part => part[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
-  
   // Map database status to UI status
   const mapStatus = (dbStatus: string): "todo" | "inProgress" | "done" => {
     switch(dbStatus) {
@@ -58,6 +50,7 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
     priority: dbTask.priority || "medium",
     assigned_date: dbTask.assigned_date,
     completion_date: dbTask.completion_date,
+    team_members: dbTask.team_members || [],
   };
 };
 

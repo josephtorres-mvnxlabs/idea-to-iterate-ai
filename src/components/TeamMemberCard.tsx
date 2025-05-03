@@ -6,8 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { User } from "@/models/database";
+import { getInitialsFromName } from "@/services/formMapper";
 
-interface TeamMember {
+export interface TeamMember {
   id: string;
   name: string;
   role: string;

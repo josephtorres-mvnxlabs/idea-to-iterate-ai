@@ -3,9 +3,9 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ProductIdea } from "@/models/database";
+import { ProductIdea, User } from "@/models/database";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "@/models/database";
+import { getInitialsFromName } from "@/services/formMapper";
 import { toast } from "sonner";
 
 interface ProductIdeaBoardProps {
@@ -188,7 +188,7 @@ function IdeaCard({ idea, onClick }: IdeaCardProps) {
                       <AvatarImage src={idea.owner.avatar_url} alt={idea.owner.name} />
                     ) : (
                       <AvatarFallback className="bg-devops-purple text-white text-xs">
-                        {idea.owner.name.substring(0, 2).toUpperCase()}
+                        {getInitialsFromName(idea.owner.name)}
                       </AvatarFallback>
                     )}
                   </Avatar>
@@ -202,7 +202,7 @@ function IdeaCard({ idea, onClick }: IdeaCardProps) {
                     <AvatarImage src={member.avatar_url} alt={member.name} />
                   ) : (
                     <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-                      {member.name.substring(0, 2).toUpperCase()}
+                      {getInitialsFromName(member.name)}
                     </AvatarFallback>
                   )}
                 </Avatar>

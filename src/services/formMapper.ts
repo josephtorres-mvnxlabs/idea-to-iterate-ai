@@ -1,3 +1,4 @@
+
 import { Epic, Task, ProductIdea } from '../models/database';
 
 // Map EpicSubmissionForm data to Epic database model
@@ -33,7 +34,7 @@ export function mapTaskFormToDatabase(
   }, 
   userId: string,
   isProductIdea: boolean = false
-): Task {
+): Omit<Task, 'id' | 'created_at' | 'updated_at'> {
   // In a real app, you'd have proper validation and error handling
   return {
     title: formData.title,
@@ -93,6 +94,7 @@ export function mapDatabaseToTaskForm(task: Task): {
   assignee?: string;
   estimation: number;
   priority: 'low' | 'medium' | 'high';
+  status?: string;
   assigned_date?: Date;
   completion_date?: Date;
 } {
@@ -103,6 +105,7 @@ export function mapDatabaseToTaskForm(task: Task): {
     assignee: task.assignee_id,
     estimation: task.estimation,
     priority: task.priority,
+    status: task.status,
     assigned_date: task.assigned_date ? new Date(task.assigned_date) : undefined,
     completion_date: task.completion_date ? new Date(task.completion_date) : undefined,
   };
@@ -121,4 +124,47 @@ export function mapDatabaseToProductIdeaForm(productIdea: ProductIdea): {
     estimation: productIdea.estimation,
     priority: productIdea.priority,
   };
+}
+
+// New utility functions for team member consistency
+
+// Map User to a consistent team member representation
+export function mapUserToTeamMember(user: {
+  id: string;
+  name: string;
+  email?: string;
+  avatar_url?: string;
+  role?: string;
+}): {
+  id: string;
+  name: string;
+  email?: string;
+  avatar_url?: string;
+  initials: string;
+} {
+  // Generate initials from name
+  const initials = user.name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatar_url: user.avatar_url,
+    initials,
+  };
+}
+
+// Get initials from a user's name
+export function getInitialsFromName(name: string): string {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
 }

@@ -3,6 +3,7 @@ import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getInitialsFromName } from "@/services/formMapper";
 
 interface TeamMemberHeaderProps {
   name: string;
@@ -42,7 +43,7 @@ export function TeamMemberHeader({
           <AvatarImage src={avatar_url} alt={name} />
         ) : (
           <AvatarFallback className="bg-devops-purple text-white text-xl">
-            {initials}
+            {initials || getInitialsFromName(name)}
           </AvatarFallback>
         )}
       </Avatar>

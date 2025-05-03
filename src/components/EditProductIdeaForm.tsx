@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,6 +26,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitialsFromName } from "@/services/formMapper";
 import {
   Command,
   CommandEmpty,
@@ -275,7 +275,7 @@ export function EditProductIdeaForm({
                     <AvatarImage src={member.avatar_url} alt={member.name} />
                   ) : (
                     <AvatarFallback className="text-[10px]">
-                      {member.name.substring(0, 2).toUpperCase()}
+                      {getInitialsFromName(member.name)}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -321,7 +321,7 @@ export function EditProductIdeaForm({
                               <AvatarImage src={user.avatar_url} alt={user.name} />
                             ) : (
                               <AvatarFallback>
-                                {user.name.substring(0, 2).toUpperCase()}
+                                {getInitialsFromName(user.name)}
                               </AvatarFallback>
                             )}
                           </Avatar>
