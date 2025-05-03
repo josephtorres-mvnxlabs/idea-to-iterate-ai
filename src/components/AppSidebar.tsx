@@ -13,7 +13,7 @@ import {
   SidebarFooter,
   SidebarTrigger
 } from "@/components/ui/sidebar";
-import { Bell, BarChart, Plus, Home, Book, Users, Settings } from "lucide-react";
+import { Bell, BarChart, Plus, Home, Book, Users, Settings, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
@@ -82,6 +82,20 @@ export function AppSidebar() {
                   <Link to="/epics-and-tasks">
                     <Book className="w-4 h-4 mr-2" />
                     <span>Epics & Tasks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/product-ideas') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/product-ideas">
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    <span>Product Ideas</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

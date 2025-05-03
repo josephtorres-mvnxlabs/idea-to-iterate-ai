@@ -1,5 +1,5 @@
 
-import { Epic, Task } from '../models/database';
+import { Epic, Task, ProductIdea } from '../models/database';
 
 // Map EpicSubmissionForm data to Epic database model
 export function mapEpicFormToDatabase(formData: {
@@ -38,6 +38,22 @@ export function mapTaskFormToDatabase(formData: {
   };
 }
 
+// Map ProductIdeaSubmissionForm data to ProductIdea database model
+export function mapProductIdeaFormToDatabase(formData: {
+  title: string;
+  description: string;
+  estimation: number;
+  priority: 'low' | 'medium' | 'high';
+}, userId: string): Omit<ProductIdea, 'id' | 'created_at' | 'updated_at' | 'status'> {
+  return {
+    title: formData.title,
+    description: formData.description,
+    estimation: formData.estimation,
+    priority: formData.priority,
+    created_by: userId,
+  };
+}
+
 // Map database Epic model to form data
 export function mapDatabaseToEpicForm(epic: Epic): {
   title: string;
@@ -69,5 +85,20 @@ export function mapDatabaseToTaskForm(task: Task): {
     assignee: task.assignee_id,
     estimation: task.estimation,
     priority: task.priority,
+  };
+}
+
+// Map database ProductIdea model to form data
+export function mapDatabaseToProductIdeaForm(productIdea: ProductIdea): {
+  title: string;
+  description: string;
+  estimation: number;
+  priority: 'low' | 'medium' | 'high';
+} {
+  return {
+    title: productIdea.title,
+    description: productIdea.description,
+    estimation: productIdea.estimation,
+    priority: productIdea.priority,
   };
 }

@@ -37,6 +37,27 @@ export interface Task {
   updated_at: string;
 }
 
+// New interface for ProductIdea
+export interface ProductIdea {
+  id: string;
+  title: string;
+  description: string;
+  estimation: number; // estimated size in days
+  priority: 'low' | 'medium' | 'high';
+  status: 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented';
+  created_by: string; // user_id
+  created_at: string;
+  updated_at: string;
+}
+
+// Junction table to link product ideas to epics (many-to-many)
+export interface ProductIdeaEpicLink {
+  id: string;
+  product_idea_id: string;
+  epic_id: string;
+  created_at: string;
+}
+
 // Database Views / Aggregations
 export interface EpicWithTasks extends Epic {
   tasks: Task[];
@@ -49,9 +70,16 @@ export interface UserWithTasks extends User {
   total_workload: number;
 }
 
+export interface ProductIdeaWithEpics extends ProductIdea {
+  epics: Epic[];
+  implementation_status: number; // percentage of completion based on linked epics
+}
+
 // Define the table names for use in API calls
 export const TABLES = {
   USERS: 'users',
   EPICS: 'epics',
-  TASKS: 'tasks'
+  TASKS: 'tasks',
+  PRODUCT_IDEAS: 'product_ideas',
+  PRODUCT_IDEA_EPIC_LINKS: 'product_idea_epic_links'
 };

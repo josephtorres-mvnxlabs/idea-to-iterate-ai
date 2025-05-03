@@ -47,11 +47,36 @@ This document outlines the database schema for the DevFlow application.
 | created_at | timestamp | When the task was created |
 | updated_at | timestamp | When the task was last updated |
 
+### Product Ideas
+
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| id | string | Primary key |
+| title | string | Product idea title |
+| description | string | Detailed description of the product idea |
+| estimation | number | Estimated size in days |
+| priority | enum | Priority level: 'low', 'medium', 'high' |
+| status | enum | Current status: 'proposed', 'under_review', 'approved', 'rejected', 'implemented' |
+| created_by | string | Foreign key to users.id |
+| created_at | timestamp | When the product idea was created |
+| updated_at | timestamp | When the product idea was last updated |
+
+### Product Idea Epic Links
+
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| id | string | Primary key |
+| product_idea_id | string | Foreign key to product_ideas.id |
+| epic_id | string | Foreign key to epics.id |
+| created_at | timestamp | When the link was created |
+
 ## Relationships
 
-- One user can create many epics and tasks (one-to-many)
+- One user can create many epics, tasks, and product ideas (one-to-many)
 - One user can be assigned to many tasks (one-to-many)
 - One epic can contain many tasks (one-to-many)
+- Product ideas can be linked to multiple epics (many-to-many)
+- Epics can be linked to multiple product ideas (many-to-many)
 
 ## Views
 
@@ -62,6 +87,10 @@ Combines epic data with associated tasks and calculates progress metrics.
 ### UserWithTasks
 
 Combines user data with their assigned tasks and calculates workload metrics.
+
+### ProductIdeaWithEpics
+
+Combines product idea data with associated epics and calculates implementation status.
 
 ## API Endpoints
 
@@ -89,3 +118,14 @@ Combines user data with their assigned tasks and calculates workload metrics.
 - `GET /api/users/:id` - Get a specific user
 - `GET /api/users/:id/tasks` - Get all tasks assigned to a user
 - `PUT /api/users/:id` - Update user information
+
+### Product Ideas
+
+- `GET /api/product-ideas` - Get all product ideas
+- `GET /api/product-ideas/:id` - Get a specific product idea
+- `POST /api/product-ideas` - Create a new product idea
+- `PUT /api/product-ideas/:id` - Update a product idea
+- `DELETE /api/product-ideas/:id` - Delete a product idea
+- `GET /api/product-ideas/:id/epics` - Get all epics linked to a product idea
+- `POST /api/product-ideas/:id/epics/:epicId` - Link a product idea to an epic
+- `DELETE /api/product-ideas/:id/epics/:epicId` - Unlink a product idea from an epic
