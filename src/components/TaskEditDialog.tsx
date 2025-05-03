@@ -95,7 +95,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
             </DialogDescription>
           </DialogHeader>
           <EpicSubmissionForm 
-            onSuccess={handleEpicCreationSuccess}
+            onSuccess={(epicId) => handleEpicCreationSuccess(epicId)}
             onCancel={() => setIsCreatingEpic(false)} 
           />
         </DialogContent>
