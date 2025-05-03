@@ -62,7 +62,7 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues }: EpicS
               id: "task-1",
               title: "Set up biometric authentication API",
               description: "Implement the backend API for biometric authentication",
-              status: "todo",
+              status: "backlog", // Changed from "todo" to "backlog" which is a valid status
               epic_id: "epic-1",
               estimation: 3,
               priority: "medium",
