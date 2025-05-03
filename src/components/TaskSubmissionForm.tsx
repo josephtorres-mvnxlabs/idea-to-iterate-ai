@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -67,10 +68,13 @@ export function TaskSubmissionForm({
 
   // Create form values combining defaults, passed values, and preselected epic
   const formDefaultValues = React.useMemo(() => {
+    // When editing a task, prefer the task's existing epic over any epicId prop
+    const effectiveEpicId = taskValues?.epic || epicId;
+    
     return {
       ...defaultValues,
       ...(taskValues || {}),
-      ...(epicId && !taskValues?.epic ? { epic: epicId } : {})
+      ...(effectiveEpicId ? { epic: effectiveEpicId } : {})
     };
   }, [epicId, taskValues]);
 
@@ -78,6 +82,17 @@ export function TaskSubmissionForm({
     resolver: zodResolver(taskFormSchema),
     defaultValues: formDefaultValues,
   });
+
+  // Effect to update form when values change
+  React.useEffect(() => {
+    if (formDefaultValues) {
+      Object.entries(formDefaultValues).forEach(([key, value]) => {
+        if (value !== undefined) {
+          form.setValue(key as keyof TaskFormValues, value as any);
+        }
+      });
+    }
+  }, [formDefaultValues, form]);
 
   const handleEpicChange = (value: string) => {
     if (value === "new" && onCreateNewEpic) {
@@ -209,7 +224,8 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={handleEpicChange}
                   defaultValue={field.value}
-                  disabled={!!epicId}
+                  // Only disable if it's a new task with a preselected epic, not when editing
+                  disabled={!isEditing && !!epicId}
                 >
                   <FormControl>
                     <SelectTrigger>

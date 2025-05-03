@@ -21,11 +21,11 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
   const [isCreatingEpic, setIsCreatingEpic] = useState(false);
   const [newEpicId, setNewEpicId] = React.useState<string | null>(null);
   
-  // Convert task to form values
+  // Convert task to form values, ensuring the epic field is correctly set
   const taskValues = task ? {
     title: task.title,
     description: task.description || "",
-    epic: task.epic_id,
+    epic: task.epic_id,  // This ensures the form displays the correct epic
     assignee: task.assignee_id,
     estimation: task.estimation,
     priority: task.priority,
@@ -66,6 +66,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
             onSuccess={handleTaskSuccess} 
             onCancel={() => onOpenChange(false)}
             isProductIdea={false}
+            // Don't pass epicId when editing, so the task's original epic can be used
             epicId={newEpicId || undefined}
             taskValues={taskValues}
             onCreateNewEpic={handleCreateNewEpic}
