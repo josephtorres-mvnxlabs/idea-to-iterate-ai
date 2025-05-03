@@ -10,17 +10,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { epicApi } from "@/services/api";
 import { mapEpicFormToDatabase } from "@/services/formMapper";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const epicFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   estimation: z.coerce.number().min(1).default(14),
+  capability_category: z.enum(['frontend', 'backend', 'infrastructure', 'data', 'security', 'other'], {
+    required_error: "Please select a capability category",
+  }),
 });
 
 type EpicFormValues = z.infer<typeof epicFormSchema>;
 
 const defaultValues: Partial<EpicFormValues> = {
   estimation: 14,
+  capability_category: 'other',
 };
 
 interface EpicSubmissionFormProps {
@@ -47,7 +52,8 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
       const epicData = mapEpicFormToDatabase({
         title: data.title,
         description: data.description,
-        estimation: data.estimation
+        estimation: data.estimation,
+        capability_category: data.capability_category
       }, userId);
       
       // Submit to API
@@ -118,6 +124,35 @@ export function EpicSubmissionForm({ onSuccess, onCancel }: EpicSubmissionFormPr
               </FormControl>
               <FormDescription>
                 Provide a clear description of what this epic aims to achieve
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="capability_category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Capability Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a capability category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="frontend">Frontend</SelectItem>
+                  <SelectItem value="backend">Backend</SelectItem>
+                  <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                  <SelectItem value="data">Data</SelectItem>
+                  <SelectItem value="security">Security</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Select the primary capability area this epic addresses
               </FormDescription>
               <FormMessage />
             </FormItem>

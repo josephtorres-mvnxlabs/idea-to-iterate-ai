@@ -24,6 +24,7 @@ This document outlines the database schema for the DevFlow application.
 | title | string | Epic title |
 | description | string | Detailed description of the epic |
 | estimation | number | Estimated duration in days |
+| capability_category | enum | Category: 'frontend', 'backend', 'infrastructure', 'data', 'security', 'other' |
 | status | enum | Current status: 'planning', 'in_progress', 'completed' |
 | created_by | string | Foreign key to users.id |
 | created_at | timestamp | When the epic was created |

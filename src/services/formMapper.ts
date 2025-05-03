@@ -6,11 +6,13 @@ export function mapEpicFormToDatabase(formData: {
   title: string;
   description: string;
   estimation: number;
+  capability_category: 'frontend' | 'backend' | 'infrastructure' | 'data' | 'security' | 'other';
 }, userId: string): Omit<Epic, 'id' | 'created_at' | 'updated_at' | 'status'> {
   return {
     title: formData.title,
     description: formData.description,
     estimation: formData.estimation,
+    capability_category: formData.capability_category,
     created_by: userId,
   };
 }
@@ -41,11 +43,13 @@ export function mapDatabaseToEpicForm(epic: Epic): {
   title: string;
   description: string;
   estimation: number;
+  capability_category: 'frontend' | 'backend' | 'infrastructure' | 'data' | 'security' | 'other';
 } {
   return {
     title: epic.title,
     description: epic.description,
     estimation: epic.estimation,
+    capability_category: epic.capability_category,
   };
 }
 

@@ -15,6 +15,7 @@ export interface Epic {
   title: string;
   description: string;
   estimation: number; // in days
+  capability_category: 'frontend' | 'backend' | 'infrastructure' | 'data' | 'security' | 'other';
   status: 'planning' | 'in_progress' | 'completed';
   created_by: string; // user_id
   created_at: string;
