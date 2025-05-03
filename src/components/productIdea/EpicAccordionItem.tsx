@@ -3,6 +3,8 @@ import * as React from "react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { EpicTaskTable } from "./EpicTaskTable";
+import { Button } from "@/components/ui/button";
+import { Unlink } from "lucide-react";
 
 interface EpicWithTasks {
   id: string;
@@ -21,19 +23,36 @@ interface EpicWithTasks {
 
 interface EpicAccordionItemProps {
   epic: EpicWithTasks;
+  onUnlink?: () => void;
 }
 
-export function EpicAccordionItem({ epic }: EpicAccordionItemProps) {
+export function EpicAccordionItem({ epic, onUnlink }: EpicAccordionItemProps) {
   return (
     <AccordionItem key={epic.id} value={epic.id}>
-      <AccordionTrigger className="hover:no-underline">
-        <div className="flex flex-col items-start text-left">
-          <div className="font-medium">{epic.title}</div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {epic.completedTasks} of {epic.totalTasks} tasks completed ({epic.progress}%)
+      <div className="flex items-center justify-between">
+        <AccordionTrigger className="flex-1 hover:no-underline">
+          <div className="flex flex-col items-start text-left">
+            <div className="font-medium">{epic.title}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {epic.completedTasks} of {epic.totalTasks} tasks completed ({epic.progress}%)
+            </div>
           </div>
-        </div>
-      </AccordionTrigger>
+        </AccordionTrigger>
+        {onUnlink && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUnlink();
+            }}
+            className="mr-2 text-muted-foreground hover:text-destructive"
+            title="Unlink epic from this product idea"
+          >
+            <Unlink className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
       <AccordionContent>
         <div className="pt-2 pb-4">
           <p className="text-sm text-muted-foreground mb-4">
@@ -48,7 +67,7 @@ export function EpicAccordionItem({ epic }: EpicAccordionItemProps) {
             <Progress value={epic.progress} className="h-1.5" />
           </div>
           
-          <EpicTaskTable tasks={epic.tasks} />
+          <EpicTaskTable tasks={epic.tasks} epicId={epic.id} />
         </div>
       </AccordionContent>
     </AccordionItem>

@@ -8,6 +8,8 @@ import { ProgressSection } from "./productIdea/ProgressSection";
 import { LinkedEpicsSection } from "./productIdea/LinkedEpicsSection";
 import { ProductIdeaFooter } from "./productIdea/ProductIdeaFooter";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { epicApi, productIdeaApi } from "@/services/api";
 
 interface EpicWithTasks {
   id: string;
@@ -90,13 +92,21 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
   const [isEditing, setIsEditing] = React.useState(false);
   const [currentIdea, setCurrentIdea] = React.useState(idea);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  // Get epics data that match the linkedEpics array in the idea
-  const linkedEpicsData = React.useMemo(() => {
-    return currentIdea.linkedEpics
-      .map(epicTitle => mockEpicsWithTasks[epicTitle])
-      .filter(Boolean);
-  }, [currentIdea.linkedEpics]);
+  // Use React Query to fetch linked epics
+  const { data: linkedEpicsData = [], isLoading } = useQuery({
+    queryKey: ['productIdea', idea.id, 'epics'],
+    queryFn: () => {
+      // In a real app, we would fetch from API
+      // For now, filter the mock epics that match the idea's linkedEpics array
+      return Promise.resolve(
+        currentIdea.linkedEpics
+          .map(epicTitle => mockEpicsWithTasks[epicTitle])
+          .filter(Boolean)
+      );
+    },
+  });
   
   const handleSaveEdit = (updatedData: Partial<ProductIdea> & { linkedEpics?: string[] }) => {
     const updatedIdea = {
@@ -113,6 +123,9 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
     if (onUpdate) {
       onUpdate(updatedIdea);
     }
+    
+    // Invalidate cached epic data to trigger a refetch
+    queryClient.invalidateQueries({ queryKey: ['productIdea', idea.id, 'epics'] });
   };
   
   const handleNewEpicCreated = (epicTitle: string) => {
@@ -135,16 +148,39 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
     // Update local state
     setCurrentIdea(updatedIdea);
     
-    // In a real app, this would update the database as well
+    // Notify parent component
     if (onUpdate) {
       onUpdate(updatedIdea);
     }
     
-    // Show success message
-    toast({
-      title: "Epic created and linked",
-      description: `Epic "${epicTitle}" has been created and linked to this product idea.`,
-    });
+    // Invalidate cached epic data
+    queryClient.invalidateQueries({ queryKey: ['productIdea', idea.id, 'epics'] });
+  };
+  
+  const handleEpicUnlinked = (epicId: string) => {
+    // Find the epic title from its ID
+    const unlinkEpicTitle = Object.entries(mockEpicsWithTasks)
+      .find(([_, epic]) => epic.id === epicId)?.[0];
+      
+    if (!unlinkEpicTitle) return;
+    
+    // Update the current idea without the unlinked epic
+    const updatedIdea = {
+      ...currentIdea,
+      linkedEpics: currentIdea.linkedEpics.filter(title => title !== unlinkEpicTitle),
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update local state
+    setCurrentIdea(updatedIdea);
+    
+    // Notify parent component
+    if (onUpdate) {
+      onUpdate(updatedIdea);
+    }
+    
+    // Invalidate cached epic data
+    queryClient.invalidateQueries({ queryKey: ['productIdea', idea.id, 'epics'] });
   };
   
   return (
@@ -173,8 +209,10 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
                 
                 {/* Linked Epics */}
                 <LinkedEpicsSection 
+                  ideaId={currentIdea.id}
                   linkedEpicsData={linkedEpicsData} 
                   onNewEpicCreated={handleNewEpicCreated}
+                  onEpicUnlinked={handleEpicUnlinked}
                 />
               </div>
             </CardContent>

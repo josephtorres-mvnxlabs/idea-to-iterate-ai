@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { productIdeaApi } from "@/services/api";
 
 interface EpicWithTasks {
   id: string;
@@ -24,25 +26,74 @@ interface EpicWithTasks {
 }
 
 interface LinkedEpicsSectionProps {
+  ideaId?: string;
   linkedEpicsData: EpicWithTasks[];
   onNewEpicCreated?: (epicTitle: string) => void;
+  onEpicLinked?: (epicId: string) => void;
+  onEpicUnlinked?: (epicId: string) => void;
+  allowUnlink?: boolean;
 }
 
-export function LinkedEpicsSection({ linkedEpicsData, onNewEpicCreated }: LinkedEpicsSectionProps) {
+export function LinkedEpicsSection({ 
+  ideaId,
+  linkedEpicsData, 
+  onNewEpicCreated,
+  onEpicLinked,
+  onEpicUnlinked,
+  allowUnlink = true
+}: LinkedEpicsSectionProps) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const { toast } = useToast();
   
-  const handleEpicCreationSuccess = () => {
+  const handleEpicCreationSuccess = (epicData: { id: string, title: string }) => {
     setIsDialogOpen(false);
     
-    // In a real app, the form would return the created epic data
-    // For this demo, we'll simulate it with a timeout
-    setTimeout(() => {
-      if (onNewEpicCreated) {
-        // For the mock implementation, we're creating a new mock epic with a generic title
-        // In a real app, this would come from the form submission response
-        onNewEpicCreated("New Epic");
+    // Link the new epic to this product idea if we have an idea ID
+    if (ideaId && epicData.id) {
+      try {
+        productIdeaApi.linkToEpic(ideaId, epicData.id)
+          .then(() => {
+            toast({
+              title: "Epic linked",
+              description: `Epic "${epicData.title}" has been linked to this product idea.`,
+            });
+            
+            if (onEpicLinked) {
+              onEpicLinked(epicData.id);
+            }
+          });
+      } catch (error) {
+        console.error("Error linking epic:", error);
       }
-    }, 500);
+    }
+    
+    // Call the provided callback
+    if (onNewEpicCreated) {
+      onNewEpicCreated(epicData.title);
+    }
+  };
+  
+  const handleUnlinkEpic = async (epicId: string, epicTitle: string) => {
+    if (!ideaId) return;
+    
+    try {
+      await productIdeaApi.unlinkFromEpic(ideaId, epicId);
+      toast({
+        title: "Epic unlinked",
+        description: `Epic "${epicTitle}" has been unlinked from this product idea.`,
+      });
+      
+      if (onEpicUnlinked) {
+        onEpicUnlinked(epicId);
+      }
+    } catch (error) {
+      console.error("Error unlinking epic:", error);
+      toast({
+        title: "Error",
+        description: "Failed to unlink epic. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   return (
@@ -62,7 +113,11 @@ export function LinkedEpicsSection({ linkedEpicsData, onNewEpicCreated }: Linked
       {linkedEpicsData.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {linkedEpicsData.map((epic) => (
-            <EpicAccordionItem key={epic.id} epic={epic} />
+            <EpicAccordionItem 
+              key={epic.id} 
+              epic={epic} 
+              onUnlink={allowUnlink ? () => handleUnlinkEpic(epic.id, epic.title) : undefined}
+            />
           ))}
         </Accordion>
       ) : (
@@ -80,6 +135,7 @@ export function LinkedEpicsSection({ linkedEpicsData, onNewEpicCreated }: Linked
           <EpicSubmissionForm
             onSuccess={handleEpicCreationSuccess}
             onCancel={() => setIsDialogOpen(false)}
+            productIdeaId={ideaId}
           />
         </DialogContent>
       </Dialog>

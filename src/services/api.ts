@@ -71,6 +71,15 @@ function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
       const epicId = endpoint.split('/')[2];
       return MOCK_TASKS.filter(task => task.epic_id === epicId);
     }
+    
+    // Epics for a specific product idea
+    if (endpoint.match(new RegExp(`/${TABLES.PRODUCT_IDEAS}/[\\w-]+/epics`))) {
+      const ideaId = endpoint.split('/')[2];
+      // In a real app, this would query the junction table
+      // For mock data, we'll return epics that would be linked to this idea
+      const linkedEpicIds = ['epic-1', 'epic-2']; // Mock linked epic IDs
+      return MOCK_EPICS.filter(epic => linkedEpicIds.includes(epic.id));
+    }
   }
   
   // POST requests - create new items
@@ -97,6 +106,25 @@ function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
       };
       MOCK_EPICS.push(newEpic);
       return newEpic;
+    }
+    
+    // Handle linking a product idea to an epic
+    if (endpoint.match(new RegExp(`/${TABLES.PRODUCT_IDEAS}/[\\w-]+/epics/[\\w-]+`))) {
+      const [ideaId, epicId] = [endpoint.split('/')[2], endpoint.split('/')[4]];
+      console.log(`Linking product idea ${ideaId} to epic ${epicId}`);
+      // In a real app, this would create a record in the junction table
+      return { success: true };
+    }
+  }
+  
+  // DELETE requests - remove items or links
+  if (method === 'DELETE') {
+    // Handle unlinking a product idea from an epic
+    if (endpoint.match(new RegExp(`/${TABLES.PRODUCT_IDEAS}/[\\w-]+/epics/[\\w-]+`))) {
+      const [ideaId, epicId] = [endpoint.split('/')[2], endpoint.split('/')[4]];
+      console.log(`Unlinking product idea ${ideaId} from epic ${epicId}`);
+      // In a real app, this would remove a record from the junction table
+      return { success: true };
     }
   }
   
@@ -129,6 +157,9 @@ export const epicApi = {
   getWithTasks: (id: string) => fetchAPI<EpicWithTasks>(`/${TABLES.EPICS}/${id}/tasks`),
   
   getAllWithTasks: () => fetchAPI<EpicWithTasks[]>(`/${TABLES.EPICS}/with-tasks`),
+  
+  getLinkedProductIdeas: (epicId: string) => 
+    fetchAPI<ProductIdea[]>(`/${TABLES.EPICS}/${epicId}/product-ideas`),
   
   calculateProgress: (epic: Epic, tasks: Task[]): number => {
     if (!tasks || tasks.length === 0) return 0;
@@ -205,6 +236,8 @@ export const productIdeaApi = {
     }),
   
   delete: (id: string) => fetchAPI<void>(`/${TABLES.PRODUCT_IDEAS}/${id}`, 'DELETE'),
+  
+  getLinkedEpics: (id: string) => fetchAPI<Epic[]>(`/${TABLES.PRODUCT_IDEAS}/${id}/epics`),
   
   getWithEpics: (id: string) => fetchAPI<ProductIdeaWithEpics>(`/${TABLES.PRODUCT_IDEAS}/${id}/epics`),
   
