@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { User } from "@/models/database";
 
 interface TeamMember {
   id: string;
@@ -59,8 +60,8 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
           </div>
           
           <div className="flex flex-wrap gap-1 justify-center mt-2">
-            {member.epics.map((epic) => (
-              <Badge key={`${member.id}-${epic}`} variant="outline" className="text-xs">
+            {member.epics.map((epic, index) => (
+              <Badge key={`${member.id}-${index}`} variant="outline" className="text-xs">
                 {epic.split(' ')[0]}
               </Badge>
             ))}
