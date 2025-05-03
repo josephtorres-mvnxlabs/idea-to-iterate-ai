@@ -7,7 +7,7 @@ interface TeamMemberHeaderProps {
   name: string;
   role: string;
   email: string;
-  avatar_url?: string; // Changed prop name to match User model
+  avatar_url?: string;
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -18,12 +18,15 @@ export function TeamMemberHeader({
   name,
   role,
   email,
-  avatar_url, // Now using avatar_url consistently
+  avatar_url,
   initials,
   activeTasks,
   completedTasks,
   epicCount
 }: TeamMemberHeaderProps) {
+  console.log("TeamMemberHeader - name:", name);
+  console.log("TeamMemberHeader - avatar_url:", avatar_url);
+  
   return (
     <div className="p-6 flex flex-col items-center text-center">
       <div className="h-2 bg-devops-purple w-full absolute top-0 left-0 right-0" />

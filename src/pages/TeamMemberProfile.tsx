@@ -87,6 +87,9 @@ const TeamMemberProfile = () => {
   // Use our custom hook to fetch and process team member data
   const { teamMember, performanceMetrics, isLoading } = useTeamMember(id);
   
+  console.log("Team Member Profile - teamMember:", teamMember);
+  console.log("Team Member Profile - id param:", id);
+  
   if (isLoading) {
     return (
       <MainLayout>
@@ -102,6 +105,8 @@ const TeamMemberProfile = () => {
 
   // If API fails, use sample data as fallback
   const memberData = teamMember || SAMPLE_TEAM_MEMBERS.find(member => member.id === id);
+  
+  console.log("Team Member Profile - memberData:", memberData);
   
   if (!memberData) {
     return (

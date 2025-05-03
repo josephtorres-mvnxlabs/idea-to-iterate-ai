@@ -24,6 +24,8 @@ interface TeamMemberCardProps {
 }
 
 export function TeamMemberCard({ member }: TeamMemberCardProps) {
+  console.log("TeamMemberCard - member:", member);
+  
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all duration-200">
       <div className="h-2 bg-devops-purple" />
