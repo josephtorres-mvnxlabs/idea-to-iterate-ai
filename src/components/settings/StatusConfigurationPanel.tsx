@@ -177,9 +177,19 @@ const StatusConfigurationPanel = () => {
   // Handle form submission for adding/editing a status
   const handleSubmitStatus = async (values: StatusFormValues) => {
     try {
+      // Make sure required fields are present
+      const statusData: Omit<Status, 'id' | 'created_at' | 'updated_at'> = {
+        name: values.name,
+        description: values.description || undefined,
+        color: values.color || undefined,
+        order: values.order,
+        is_default: values.is_default || false,
+        is_completed: values.is_completed || false
+      };
+      
       if (editingStatus) {
         // Update existing status
-        const updatedStatus = await statusConfigService.updateStatus(editingStatus.id, values);
+        const updatedStatus = await statusConfigService.updateStatus(editingStatus.id, statusData);
         if (updatedStatus) {
           setStatuses(prevStatuses => 
             prevStatuses.map(s => s.id === updatedStatus.id ? updatedStatus : s)
@@ -191,7 +201,7 @@ const StatusConfigurationPanel = () => {
         }
       } else {
         // Create new status
-        const newStatus = await statusConfigService.createStatus(values);
+        const newStatus = await statusConfigService.createStatus(statusData);
         setStatuses(prevStatuses => [...prevStatuses, newStatus]);
         
         // Enable this status for the current entity type
