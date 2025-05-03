@@ -32,6 +32,8 @@ export interface Task {
   priority: 'low' | 'medium' | 'high';
   status: 'backlog' | 'ready' | 'in_progress' | 'review' | 'done';
   is_product_idea: boolean; // To differentiate between regular tasks and product ideas
+  assigned_date?: string; // Date when the task was assigned
+  completion_date?: string; // Date when the task was completed
   created_by: string; // user_id
   created_at: string;
   updated_at: string;

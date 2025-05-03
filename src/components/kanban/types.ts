@@ -16,6 +16,8 @@ export interface Task {
   };
   epic: string;
   priority?: "low" | "medium" | "high";
+  assigned_date?: string;
+  completion_date?: string;
 }
 
 export interface TaskCardProps {

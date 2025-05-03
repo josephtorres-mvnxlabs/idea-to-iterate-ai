@@ -13,6 +13,11 @@ import { taskApi, epicApi, userApi } from "@/services/api";
 import { mapTaskFormToDatabase } from "@/services/formMapper";
 import { useQuery } from "@tanstack/react-query";
 import { Epic, User } from "@/models/database";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
 
 const taskFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -21,6 +26,8 @@ const taskFormSchema = z.object({
   assignee: z.string().optional(),
   estimation: z.coerce.number().min(0).default(1),
   priority: z.enum(["low", "medium", "high"]),
+  assigned_date: z.date().optional().nullable(),
+  completion_date: z.date().optional().nullable(),
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -28,6 +35,8 @@ type TaskFormValues = z.infer<typeof taskFormSchema>;
 const defaultValues: Partial<TaskFormValues> = {
   priority: "medium",
   estimation: 1,
+  assigned_date: null,
+  completion_date: null,
 };
 
 interface TaskSubmissionFormProps {
@@ -99,7 +108,9 @@ export function TaskSubmissionForm({
         epic: data.epic || epicId, // Prioritize form data but fall back to epicId
         assignee: data.assignee,
         estimation: data.estimation,
-        priority: data.priority
+        priority: data.priority,
+        assigned_date: data.assigned_date ? format(data.assigned_date, "yyyy-MM-dd") : undefined,
+        completion_date: data.completion_date ? format(data.completion_date, "yyyy-MM-dd") : undefined
       }, userId, isProductIdea);
       
       // Submit to API
@@ -342,6 +353,96 @@ export function TaskSubmissionForm({
               </FormItem>
             )}
           />
+          
+          {!isProductIdea && (
+            <>
+              <FormField
+                control={form.control}
+                name="assigned_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Assigned Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value || undefined}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Date when the task was assigned
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="completion_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Completion Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value || undefined}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormDescription>
+                      Date when the task was completed
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">

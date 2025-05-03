@@ -25,6 +25,8 @@ export function mapTaskFormToDatabase(formData: {
   assignee?: string;
   estimation: number;
   priority: 'low' | 'medium' | 'high';
+  assigned_date?: string;
+  completion_date?: string;
 }, userId: string, isProductIdea: boolean = false): Omit<Task, 'id' | 'created_at' | 'updated_at' | 'status'> {
   return {
     title: formData.title,
@@ -33,6 +35,8 @@ export function mapTaskFormToDatabase(formData: {
     assignee_id: formData.assignee,
     estimation: formData.estimation,
     priority: formData.priority,
+    assigned_date: formData.assigned_date,
+    completion_date: formData.completion_date,
     is_product_idea: isProductIdea,
     created_by: userId,
   };
@@ -77,6 +81,8 @@ export function mapDatabaseToTaskForm(task: Task): {
   assignee?: string;
   estimation: number;
   priority: 'low' | 'medium' | 'high';
+  assigned_date?: Date;
+  completion_date?: Date;
 } {
   return {
     title: task.title,
@@ -85,6 +91,8 @@ export function mapDatabaseToTaskForm(task: Task): {
     assignee: task.assignee_id,
     estimation: task.estimation,
     priority: task.priority,
+    assigned_date: task.assigned_date ? new Date(task.assigned_date) : undefined,
+    completion_date: task.completion_date ? new Date(task.completion_date) : undefined,
   };
 }
 

@@ -19,6 +19,9 @@ interface EpicWithTasks {
     title: string;
     status: string;
     priority: string;
+    assigned_date?: string;
+    completion_date?: string;
+    estimation?: number;
   }[];
   progress: number;
   completedTasks: number;

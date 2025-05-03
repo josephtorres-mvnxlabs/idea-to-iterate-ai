@@ -3,9 +3,11 @@ import * as React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { format, differenceInDays } from "date-fns";
 
 interface EpicTaskTableProps {
   tasks: {
@@ -13,12 +15,32 @@ interface EpicTaskTableProps {
     title: string;
     status: string;
     priority: string;
+    assigned_date?: string;
+    completion_date?: string;
+    estimation?: number;
   }[];
   epicId?: string;
 }
 
 export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
   const [isAddTaskDialogOpen, setIsAddTaskDialogOpen] = React.useState(false);
+  
+  // Function to calculate days difference between assigned and completion dates
+  const calculateActualDays = (assignedDate?: string, completionDate?: string): number | null => {
+    if (!assignedDate || !completionDate) return null;
+    
+    const start = new Date(assignedDate);
+    const end = new Date(completionDate);
+    
+    // Add 1 to include both start and end days
+    return differenceInDays(end, start) + 1;
+  };
+  
+  // Function to format dates for display
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return "—";
+    return format(new Date(dateString), "MMM d, yyyy");
+  };
   
   return (
     <div>
@@ -40,30 +62,71 @@ export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
               <TableHead>Task</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Priority</TableHead>
+              <TableHead>Dates</TableHead>
+              <TableHead>Est/Actual</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tasks.length > 0 ? (
-              tasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell>{task.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={
-                      task.status === 'done' ? 'bg-green-100 text-green-800' :
-                      task.status === 'in_progress' ? 'bg-amber-100 text-amber-800' :
-                      'bg-gray-100 text-gray-800'
-                    }>
-                      {task.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{task.priority}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))
+              tasks.map((task) => {
+                const actualDays = calculateActualDays(task.assigned_date, task.completion_date);
+                const isOverEstimated = actualDays !== null && task.estimation !== undefined && actualDays > task.estimation;
+                
+                return (
+                  <TableRow key={task.id}>
+                    <TableCell>{task.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={
+                        task.status === 'done' ? 'bg-green-100 text-green-800' :
+                        task.status === 'in_progress' ? 'bg-amber-100 text-amber-800' :
+                        'bg-gray-100 text-gray-800'
+                      }>
+                        {task.status.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{task.priority}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center text-xs">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {task.assigned_date && formatDate(task.assigned_date)}
+                              {task.assigned_date && task.completion_date && " → "}
+                              {task.completion_date && formatDate(task.completion_date)}
+                              {!task.assigned_date && !task.completion_date && "—"}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="text-xs">
+                              {task.assigned_date ? (
+                                <p>Assigned: {formatDate(task.assigned_date)}</p>
+                              ) : (
+                                <p>Not assigned yet</p>
+                              )}
+                              {task.completion_date ? (
+                                <p>Completed: {formatDate(task.completion_date)}</p>
+                              ) : (
+                                <p>Not completed yet</p>
+                              )}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </TableCell>
+                    <TableCell>
+                      <div className={`text-xs ${isOverEstimated ? 'text-red-600 font-medium' : ''}`}>
+                        {task.estimation || '—'}/{actualDays || '—'} days
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
                   No tasks in this epic yet
                 </TableCell>
               </TableRow>
