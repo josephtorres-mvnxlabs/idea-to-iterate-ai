@@ -8,10 +8,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
-import { Task } from "@/models/database";
 
-// Define a local TaskView type that extends the database Task type with UI-specific properties
-interface TaskView {
+interface Task {
   id: string;
   title: string;
   description?: string;
@@ -29,32 +27,9 @@ interface TaskView {
 interface KanbanBoardProps {
   selectedEpic?: string;
   viewMode: "kanban" | "list";
-  onEditTask?: (task: Task) => void;  // Using the imported Task type
 }
 
-// Convert database Task type to our UI representation
-function mapDatabaseTaskToView(task: Task): TaskView {
-  return {
-    id: task.id,
-    title: task.title,
-    description: task.description,
-    // Map database status to our UI status
-    status: task.status === 'backlog' ? 'todo' : 
-            task.status === 'in_progress' ? 'inProgress' : 
-            task.status === 'done' ? 'done' : 'todo',
-    estimation: task.estimation,
-    // In a real app, you would get the actual time from somewhere
-    actual: task.status === 'done' ? task.estimation * 0.8 : undefined,
-    assignee: {
-      // In a real app, you would get the assignee details from users table
-      name: "Team Member",
-      initials: "TM"
-    },
-    epic: task.epic_id || "Unassigned" 
-  };
-}
-
-const SAMPLE_TASKS: TaskView[] = [
+const SAMPLE_TASKS: Task[] = [
   {
     id: "task-1",
     title: "Set up biometric authentication API",
@@ -160,18 +135,17 @@ function getStatusLabel(status: string) {
 }
 
 // Calculate epic progress based on tasks
-function calculateEpicProgress(tasks: TaskView[]): number {
+function calculateEpicProgress(tasks: Task[]): number {
   if (!tasks || tasks.length === 0) return 0;
   const completedTasks = tasks.filter(task => task.status === "done").length;
   return Math.round((completedTasks / tasks.length) * 100);
 }
 
-export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardProps) {
+export function KanbanBoard({ selectedEpic, viewMode }: KanbanBoardProps) {
   // Set internal state based on prop
   const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
-  const [selectedTaskView, setSelectedTaskView] = React.useState<TaskView | null>(null);
-  const [selectedDbTask, setSelectedDbTask] = React.useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   
   // Update internal state when prop changes
   React.useEffect(() => {
@@ -203,39 +177,14 @@ export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardP
     };
   }, [selectedEpicState]);
 
-  // When a task is edited, we need to convert our UI task to a database task
-  const handleEditTask = (taskView: TaskView) => {
-    // If external edit handler is provided, use it
-    if (onEditTask) {
-      // Convert the UI task to a database task
-      // In a real app, you would fetch the full task from the API
-      const dbTask: Task = {
-        id: taskView.id,
-        title: taskView.title,
-        description: taskView.description || "",
-        epic_id: taskView.epic,
-        assignee_id: undefined, // In a real app, you'd map this correctly
-        estimation: taskView.estimation,
-        priority: "medium", // Default since UI model doesn't have this
-        status: taskView.status === "todo" ? "backlog" : 
-                taskView.status === "inProgress" ? "in_progress" : "done",
-        is_product_idea: false,
-        created_by: "", // In a real app, this would be set
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      onEditTask(dbTask);
-    } else {
-      // Otherwise use internal dialog
-      setSelectedTaskView(taskView);
-      setIsEditDialogOpen(true);
-    }
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditDialogOpen(true);
   };
   
   const handleEditSuccess = () => {
     setIsEditDialogOpen(false);
-    setSelectedTaskView(null);
+    setSelectedTask(null);
     // In a real app, this would save the updated task to the backend
     // and refresh the task list
   };
@@ -352,8 +301,8 @@ export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardP
         </TabsContent>
       </Tabs>
 
-      {/* Task Edit Dialog - only show if onEditTask prop is not provided */}
-      {!onEditTask && selectedTaskView && (
+      {/* Task Edit Dialog */}
+      {selectedTask && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogTitle>Edit Task</DialogTitle>
@@ -362,11 +311,11 @@ export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardP
               onCancel={() => setIsEditDialogOpen(false)}
               isProductIdea={false}
               taskValues={{
-                title: selectedTaskView.title,
-                description: selectedTaskView.description || "",
-                epic: selectedTaskView.epic,
-                priority: "medium", // Default since our UI model doesn't have this
-                estimation: selectedTaskView.estimation
+                title: selectedTask.title,
+                description: selectedTask.description || "",
+                epic: selectedTask.epic,
+                priority: "medium", // Default since our sample data doesn't have priority
+                estimation: selectedTask.estimation
               }}
             />
           </DialogContent>
@@ -377,7 +326,7 @@ export function KanbanBoard({ selectedEpic, viewMode, onEditTask }: KanbanBoardP
 }
 
 interface TaskCardProps {
-  task: TaskView;
+  task: Task;
   listView?: boolean;
   onEdit?: () => void;
 }

@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -12,7 +13,6 @@ import { taskApi, epicApi, userApi } from "@/services/api";
 import { mapTaskFormToDatabase } from "@/services/formMapper";
 import { useQuery } from "@tanstack/react-query";
 import { Epic, User } from "@/models/database";
-import { Plus } from "lucide-react";
 
 const taskFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -36,7 +36,6 @@ interface TaskSubmissionFormProps {
   isProductIdea?: boolean;
   epicId?: string;
   taskValues?: Partial<TaskFormValues>;
-  onCreateNewEpic?: () => void;
 }
 
 export function TaskSubmissionForm({ 
@@ -44,35 +43,21 @@ export function TaskSubmissionForm({
   onCancel, 
   isProductIdea = false,
   epicId,
-  taskValues,
-  onCreateNewEpic
+  taskValues
 }: TaskSubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const isEditing = !!taskValues;
 
-  // For debugging purposes
-  React.useEffect(() => {
-    console.log("TaskSubmissionForm initialized with:", { 
-      epicId, 
-      taskValues,
-      isEditing
-    });
-    
-    if (taskValues) {
-      console.log("Task epic_id:", taskValues.epic);
-    }
-  }, [epicId, taskValues, isEditing]);
-
   // Fetch epics for dropdown
-  const { data: epics, isLoading: epicsLoading } = useQuery({
+  const { data: epics } = useQuery({
     queryKey: ['epics'],
     queryFn: epicApi.getAll,
     placeholderData: [] as Epic[]
   });
 
   // Fetch team members for dropdown
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users } = useQuery({
     queryKey: ['users'],
     queryFn: userApi.getAll,
     placeholderData: [] as User[]
@@ -80,15 +65,10 @@ export function TaskSubmissionForm({
 
   // Create form values combining defaults, passed values, and preselected epic
   const formDefaultValues = React.useMemo(() => {
-    // When editing a task, prefer the task's existing epic over any epicId prop
-    const effectiveEpicId = taskValues?.epic || epicId;
-    
-    console.log("Calculating form defaults with effectiveEpicId:", effectiveEpicId);
-    
     return {
       ...defaultValues,
       ...(taskValues || {}),
-      ...(effectiveEpicId ? { epic: effectiveEpicId } : {})
+      ...(epicId && !taskValues?.epic ? { epic: epicId } : {})
     };
   }, [epicId, taskValues]);
 
@@ -97,45 +77,11 @@ export function TaskSubmissionForm({
     defaultValues: formDefaultValues,
   });
 
-  // Effect to update form when values change
-  React.useEffect(() => {
-    if (formDefaultValues) {
-      console.log("Setting form values:", formDefaultValues);
-      
-      Object.entries(formDefaultValues).forEach(([key, value]) => {
-        if (value !== undefined) {
-          form.setValue(key as keyof TaskFormValues, value as any);
-        }
-      });
-    }
-  }, [formDefaultValues, form]);
-
-  const handleEpicChange = (value: string) => {
-    console.log("Epic selection changed:", value);
-    
-    if (value === "new" && onCreateNewEpic) {
-      onCreateNewEpic();
-    } else {
-      form.setValue("epic", value);
-    }
-  };
-
-  // Log current form value for debugging
-  React.useEffect(() => {
-    const subscription = form.watch((value) => {
-      console.log("Form current values:", value);
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form]);
-
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
     try {
       // In a real app, you'd get the user ID from auth context
       const userId = "current-user-id"; 
-      
-      console.log("Submitting form with data:", data);
       
       // Convert form data to database model - ensure all required fields are present
       const taskData = mapTaskFormToDatabase({
@@ -244,44 +190,72 @@ export function TaskSubmissionForm({
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="epic"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Epic</FormLabel>
-                <Select 
-                  onValueChange={handleEpicChange}
-                  defaultValue={field.value}
-                  value={field.value}
-                  // Only disable if it's a new task with a preselected epic, not when editing
-                  disabled={!isEditing && !!epicId}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an epic" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {onCreateNewEpic && (
-                      <SelectItem value="new" className="flex items-center text-devops-purple">
-                        <Plus className="h-4 w-4 mr-1 inline" /> Create new epic
-                      </SelectItem>
-                    )}
-                    {epics?.map((epic) => (
-                      <SelectItem key={epic.id} value={epic.id}>
-                        {epic.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  {epicsLoading ? "Loading epics..." : "Select an existing epic or create a new one"}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isProductIdea ? (
+            <FormField
+              control={form.control}
+              name="epic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Epic</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={!!epicId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an epic or create new" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="new">+ Create new epic</SelectItem>
+                      {epics?.map((epic) => (
+                        <SelectItem key={epic.id} value={epic.id}>
+                          {epic.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select an existing epic or create a new one
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="epic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Epic</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                    disabled={!!epicId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an epic" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {epics?.map((epic) => (
+                        <SelectItem key={epic.id} value={epic.id}>
+                          {epic.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    The epic this task belongs to
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}
@@ -292,7 +266,6 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
-                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -300,8 +273,6 @@ export function TaskSubmissionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {/* Fixed: Changed empty string to "unassigned" to avoid the error */}
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {users?.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}
@@ -309,9 +280,6 @@ export function TaskSubmissionForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  {usersLoading ? "Loading users..." : "Assign this task to a team member"}
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -348,7 +316,6 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
-                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>

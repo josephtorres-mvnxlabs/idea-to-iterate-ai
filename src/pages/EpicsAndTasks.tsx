@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -11,8 +12,6 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, Di
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Separator } from "@/components/ui/separator";
-import { TaskEditDialog } from "@/components/TaskEditDialog";
-import { Task } from "@/models/database";
 
 // Sample epics data structure with more complete information
 const SAMPLE_EPICS = [
@@ -39,30 +38,12 @@ const SAMPLE_EPICS = [
   }
 ];
 
-// Sample task for editing
-const SAMPLE_TASK: Task = {
-  id: "task-1",
-  title: "Set up biometric authentication API",
-  description: "Implement the backend API for biometric authentication",
-  status: "backlog",
-  epic_id: "epic-1",
-  estimation: 3,
-  priority: "medium",
-  assignee_id: "user-1",
-  created_by: "user-1",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  is_product_idea: false
-};
-
 const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
   const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
-  const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = React.useState(false); 
   const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
-  const [selectedTaskToEdit, setSelectedTaskToEdit] = React.useState<Task | null>(null);
   const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
   const handleEditEpic = (epicTitle: string) => {
@@ -73,26 +54,10 @@ const EpicsAndTasks = () => {
     }
   };
 
-  const handleEditTask = (task: Task) => {
-    setSelectedTaskToEdit(task);
-    setIsEditTaskDialogOpen(true);
-  };
-
   const handleSaveEpic = () => {
     // In a real app, this would save the epic to the database
     setIsEditEpicDialogOpen(false);
     setSelectedEpicToEdit(null);
-  };
-  
-  const handleSaveTask = () => {
-    // In a real app, this would save the task to the database
-    setIsEditTaskDialogOpen(false);
-    setSelectedTaskToEdit(null);
-  };
-  
-  // Pass this to the KanbanBoard to handle task editing
-  const onEditTask = (task: Task) => {
-    handleEditTask(task);
   };
 
   return (
@@ -200,11 +165,7 @@ const EpicsAndTasks = () => {
           </div>
         </div>
         
-        <KanbanBoard 
-          selectedEpic={selectedEpic} 
-          viewMode={viewMode} 
-          onEditTask={onEditTask}
-        />
+        <KanbanBoard selectedEpic={selectedEpic} viewMode={viewMode} />
       </div>
 
       {/* Task Submission Dialog */}
@@ -221,10 +182,6 @@ const EpicsAndTasks = () => {
             onCancel={() => setIsTaskDialogOpen(false)}
             isProductIdea={false} 
             epicId={selectedEpic}
-            onCreateNewEpic={() => {
-              setIsTaskDialogOpen(false);
-              setIsEpicDialogOpen(true);
-            }}
           />
         </DialogContent>
       </Dialog>
@@ -267,14 +224,6 @@ const EpicsAndTasks = () => {
           />
         </DialogContent>
       </Dialog>
-      
-      {/* Task Edit Dialog - new component */}
-      <TaskEditDialog 
-        open={isEditTaskDialogOpen}
-        onOpenChange={setIsEditTaskDialogOpen}
-        task={selectedTaskToEdit}
-        onSuccess={handleSaveTask}
-      />
     </MainLayout>
   );
 };

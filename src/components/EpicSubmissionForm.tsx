@@ -38,7 +38,7 @@ const defaultValues: Partial<EpicFormValues> = {
 };
 
 interface EpicSubmissionFormProps {
-  onSuccess?: (epicId: string) => void;
+  onSuccess?: () => void;
   onCancel?: () => void;
   initialValues?: Partial<EpicFormValues>;
   useSheet?: boolean;
@@ -151,23 +151,15 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       }, userId);
       
       // Submit to API
-      let createdEpicId = "";
-      
       if (isEditing) {
         // Update existing epic
         toast({
           title: "Epic updated",
           description: `Epic "${data.title}" has been updated successfully.`,
         });
-        
-        // In a real app, we would get the ID from the update response
-        createdEpicId = epicId || "updated-epic-id";
       } else {
         // Create new epic
-        // In a real app, the create method would return the new epic ID
-        const result = await epicApi.create(epicData);
-        createdEpicId = result?.id || "new-epic-id";
-        
+        await epicApi.create(epicData);
         toast({
           title: "Epic created",
           description: `Epic "${data.title}" has been created successfully.`,
@@ -178,7 +170,7 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       form.reset();
       
       if (onSuccess) {
-        onSuccess(createdEpicId);
+        onSuccess();
       }
     } catch (error) {
       console.error("Failed to create/update epic:", error);
