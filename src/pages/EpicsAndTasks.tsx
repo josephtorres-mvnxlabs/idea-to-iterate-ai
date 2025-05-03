@@ -107,7 +107,7 @@ const EpicsAndTasks = () => {
           </div>
         </div>
         
-        <KanbanBoard />
+        <KanbanBoard selectedEpic={selectedEpic} />
       </div>
 
       {/* Task Submission Dialog */}

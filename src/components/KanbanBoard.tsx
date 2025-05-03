@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,10 @@ interface Task {
     initials: string;
   };
   epic: string;
+}
+
+interface KanbanBoardProps {
+  selectedEpic?: string;
 }
 
 const SAMPLE_TASKS: Task[] = [
@@ -133,14 +136,14 @@ function calculateEpicProgress(tasks: Task[]): number {
   return Math.round((completedTasks / tasks.length) * 100);
 }
 
-export function KanbanBoard() {
-  const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
+export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
+  const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
   
   // Get tasks filtered by selected epic
   const filteredTasks = React.useMemo(() => {
-    if (!selectedEpic) return SAMPLE_TASKS;
-    return SAMPLE_TASKS.filter(task => task.epic === selectedEpic);
-  }, [selectedEpic]);
+    if (!selectedEpicState) return SAMPLE_TASKS;
+    return SAMPLE_TASKS.filter(task => task.epic === selectedEpicState);
+  }, [selectedEpicState]);
   
   // Get all unique epics from tasks
   const uniqueEpics = React.useMemo(() => {
@@ -149,8 +152,8 @@ export function KanbanBoard() {
   
   // Calculate progress for selected epic
   const epicProgress = React.useMemo(() => {
-    if (!selectedEpic) return null;
-    const epicTasks = SAMPLE_TASKS.filter(task => task.epic === selectedEpic);
+    if (!selectedEpicState) return null;
+    const epicTasks = SAMPLE_TASKS.filter(task => task.epic === selectedEpicState);
     const progress = calculateEpicProgress(epicTasks);
     const completedCount = epicTasks.filter(task => task.status === "done").length;
     
@@ -159,7 +162,7 @@ export function KanbanBoard() {
       completed: completedCount,
       total: epicTasks.length
     };
-  }, [selectedEpic]);
+  }, [selectedEpicState]);
   
   return (
     <div className="w-full animate-fade-in rounded-md bg-white/80 p-4 border border-gray-100 shadow-sm">
@@ -172,10 +175,10 @@ export function KanbanBoard() {
             </TabsList>
           </div>
           <div className="flex items-center space-x-2">
-            {selectedEpic && (
+            {selectedEpicState && (
               <div className="flex items-center gap-3">
                 <Badge variant="outline" className="text-xs">
-                  Epic: {selectedEpic}
+                  Epic: {selectedEpicState}
                 </Badge>
                 {epicProgress && (
                   <div className="flex items-center gap-2 text-xs">
@@ -194,8 +197,8 @@ export function KanbanBoard() {
             <Badge 
               key={epic}
               variant="outline" 
-              className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic ? 'bg-devops-purple/20 border-devops-purple' : ''}`}
-              onClick={() => setSelectedEpic(epic === selectedEpic ? undefined : epic)}
+              className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpicState === epic ? 'bg-devops-purple/20 border-devops-purple' : ''}`}
+              onClick={() => setSelectedEpicState(epic === selectedEpicState ? undefined : epic)}
             >
               {epic}
             </Badge>
