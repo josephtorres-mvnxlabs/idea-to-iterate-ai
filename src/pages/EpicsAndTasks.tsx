@@ -25,7 +25,7 @@ const EpicsAndTasks = () => {
   const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
   // Fetch product ideas - Fixed useQuery without the onError in options
-  const { data: productIdeas = MOCK_PRODUCT_IDEAS } = useQuery({
+  const { data: productIdeasData = MOCK_PRODUCT_IDEAS } = useQuery({
     queryKey: ['productIdeas'],
     queryFn: () => productIdeaApi.getAll(),
     // The onError callback needs to be moved to meta.onError in newer versions of react-query
@@ -39,6 +39,11 @@ const EpicsAndTasks = () => {
       }
     }
   });
+
+  // Make sure productIdeas is always an array
+  const productIdeas = React.useMemo(() => {
+    return Array.isArray(productIdeasData) ? productIdeasData : MOCK_PRODUCT_IDEAS;
+  }, [productIdeasData]);
 
   // Get filtered epics based on selected product idea
   const filteredEpics = React.useMemo(() => {
@@ -55,6 +60,7 @@ const EpicsAndTasks = () => {
   
   console.log('EpicsAndTasks - Selected Epic ID:', selectedEpic);
   console.log('EpicsAndTasks - Selected Idea ID:', selectedIdea);
+  console.log('EpicsAndTasks - Product Ideas:', productIdeas);
   
   const handleEditEpic = (epicId: string) => {
     const epic = MOCK_EPICS.find(e => e.id === epicId);
@@ -120,7 +126,7 @@ const EpicsAndTasks = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {productIdeas.map((idea) => (
+              {Array.isArray(productIdeas) && productIdeas.map((idea) => (
                 <Badge 
                   key={idea.id}
                   variant={selectedIdea === idea.id ? "default" : "outline"}
@@ -138,7 +144,9 @@ const EpicsAndTasks = () => {
             </div>
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                {selectedIdea ? `Viewing: ${productIdeas.find(i => i.id === selectedIdea)?.title}` : 'Showing all product ideas'}
+                {selectedIdea && Array.isArray(productIdeas) ? 
+                  `Viewing: ${productIdeas.find(i => i.id === selectedIdea)?.title}` : 
+                  'Showing all product ideas'}
               </div>
             </div>
           </CardContent>
