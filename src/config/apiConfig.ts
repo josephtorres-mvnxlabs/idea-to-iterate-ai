@@ -6,11 +6,17 @@
  * Update these values to match your FastAPI backend settings.
  */
 
+// Get environment variables - for Vite, we use import.meta.env instead of process.env
+const getEnvVar = (key: string, defaultValue: string): string => {
+  // In Vite, environment variables are exposed through import.meta.env
+  return import.meta.env[key] || defaultValue;
+};
+
 // Set to false to use the real API instead of mock data
 export const USE_MOCK_DATA = true;
 
 // Base URL for the FastAPI backend
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = getEnvVar('VITE_API_URL', 'http://localhost:8000/api');
 
 // API request timeout in milliseconds
 export const API_TIMEOUT = 30000;

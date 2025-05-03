@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/MainLayout";
@@ -162,27 +161,41 @@ const TeamMemberProfile = () => {
     };
   }, [id, userData, userTasks, allEpics, isLoading]);
 
-  // Calculate performance metrics
+  // Calculate updated performance metrics
   const performanceMetrics = React.useMemo(() => {
     if (isLoading || !teamMember || userTasks.length === 0) {
       return {
-        velocity: 8.5,
-        velocityPercentage: 85,
+        estimatedDays: 14,
+        actualDays: 12,
+        timeEfficiency: 114,
         completionRate: 92,
         workload: 65
       };
     }
 
-    // Calculate velocity (story points/week)
-    let totalEstimation = 0;
-    userTasks
-      .filter(task => task.status === 'done')
-      .forEach(task => {
-        totalEstimation += task.estimation;
-      });
+    // Calculate estimated vs actual days for completed tasks
+    let totalEstimatedDays = 0;
+    let totalActualDays = 0;
     
-    // Estimate weekly velocity (assuming completed tasks over 4 weeks for this example)
-    const velocity = totalEstimation > 0 ? totalEstimation / 4 : 0;
+    const completedTasks = userTasks.filter(task => task.status === 'done');
+    
+    completedTasks.forEach(task => {
+      // Use task's estimation field as the number of estimated days
+      totalEstimatedDays += task.estimation;
+      
+      // Calculate actual days based on created_at and updated_at dates
+      if (task.created_at && task.updated_at) {
+        const created = new Date(task.created_at);
+        const completed = new Date(task.updated_at);
+        const days = Math.max(1, differenceInDays(completed, created));
+        totalActualDays += days;
+      }
+    });
+    
+    // Calculate time efficiency percentage (estimated vs actual)
+    // Higher than 100% means faster than estimated, lower means slower
+    const timeEfficiency = totalEstimatedDays > 0 ? 
+      Math.round((totalEstimatedDays / Math.max(1, totalActualDays)) * 100) : 100;
     
     // Calculate task completion rate
     const completionRate = userTasks.length > 0
@@ -194,8 +207,9 @@ const TeamMemberProfile = () => {
     const workload = Math.min(Math.round((teamMember.activeTasks / 5) * 100), 100);
     
     return {
-      velocity,
-      velocityPercentage: Math.min(Math.round(velocity * 10), 100), // Scale for visual display
+      estimatedDays: totalEstimatedDays,
+      actualDays: totalActualDays,
+      timeEfficiency,
       completionRate,
       workload
     };
@@ -324,16 +338,21 @@ const TeamMemberProfile = () => {
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Velocity</span>
+                      <span className="text-sm font-medium">Time Efficiency</span>
                       <span className="text-sm text-muted-foreground">
-                        {performanceMetrics.velocity.toFixed(1)} story points/week
+                        {performanceMetrics.estimatedDays} est. days vs {performanceMetrics.actualDays} actual days
                       </span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5">
                       <div 
-                        className="bg-devops-purple h-2.5 rounded-full" 
-                        style={{ width: `${performanceMetrics.velocityPercentage}%` }}
+                        className={`h-2.5 rounded-full ${performanceMetrics.timeEfficiency >= 100 ? 'bg-devops-green' : 'bg-devops-yellow'}`}
+                        style={{ width: `${Math.min(Math.max(performanceMetrics.timeEfficiency, 20), 150)}%` }}
                       ></div>
+                    </div>
+                    <div className="flex justify-end mt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {performanceMetrics.timeEfficiency}% {performanceMetrics.timeEfficiency >= 100 ? 'faster than estimated' : 'of estimated time'}
+                      </span>
                     </div>
                   </div>
                   
@@ -352,7 +371,7 @@ const TeamMemberProfile = () => {
                   
                   <div>
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Workload</span>
+                      <span className="text-sm font-medium">Current Workload</span>
                       <span className="text-sm text-muted-foreground">{performanceMetrics.workload}%</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2.5">

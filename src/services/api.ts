@@ -1,11 +1,6 @@
 import { Epic, Task, User, ProductIdea, TABLES, EpicWithTasks, ProductIdeaWithEpics } from '../models/database';
 import { MOCK_TASKS, MOCK_EPICS, MOCK_USERS } from './mockData';
-
-// Flag to toggle between real API and mock data
-const USE_MOCK_DATA = true;
-
-// Base API URL - This should be updated to point to your FastAPI backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import { USE_MOCK_DATA, API_BASE_URL } from '../config/apiConfig';
 
 // Generic fetch wrapper with error handling
 async function fetchAPI<T>(
