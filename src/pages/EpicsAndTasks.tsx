@@ -3,7 +3,7 @@ import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, ListTodo, SquareKanban } from "lucide-react";
+import { Plus, Filter, ListTodo, SquareKanban, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -17,6 +17,8 @@ const EpicsAndTasks = () => {
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
+  const [isEditEpicDialogOpen, setIsEditEpicDialogOpen] = React.useState(false);
+  const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<string | null>(null);
   
   // Sample epics data
   const epics = [
@@ -24,6 +26,11 @@ const EpicsAndTasks = () => {
     "Performance Optimization Initiative",
     "ML-Driven Recommendations"
   ];
+
+  const handleEditEpic = (epic: string) => {
+    setSelectedEpicToEdit(epic);
+    setIsEditEpicDialogOpen(true);
+  };
 
   return (
     <MainLayout>
@@ -76,10 +83,22 @@ const EpicsAndTasks = () => {
                 <Badge 
                   key={epic}
                   variant="outline" 
-                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic ? 'bg-devops-purple/20 border-devops-purple' : ''}`}
+                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic ? 'bg-devops-purple/20 border-devops-purple' : ''} group relative`}
                   onClick={() => setSelectedEpic(epic === selectedEpic ? undefined : epic)}
                 >
                   {epic}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="ml-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditEpic(epic);
+                    }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                    <span className="sr-only">Edit epic</span>
+                  </Button>
                 </Badge>
               ))}
             </div>
@@ -129,6 +148,18 @@ const EpicsAndTasks = () => {
           <EpicSubmissionForm 
             onSuccess={() => setIsEpicDialogOpen(false)} 
             onCancel={() => setIsEpicDialogOpen(false)} 
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Epic Edit Dialog */}
+      <Dialog open={isEditEpicDialogOpen} onOpenChange={setIsEditEpicDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogTitle>Edit Epic</DialogTitle>
+          <EpicSubmissionForm 
+            onSuccess={() => setIsEditEpicDialogOpen(false)} 
+            onCancel={() => setIsEditEpicDialogOpen(false)} 
+            initialValues={{ title: selectedEpicToEdit || '' }}
           />
         </DialogContent>
       </Dialog>

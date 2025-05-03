@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
+import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 
 interface Task {
   id: string;
@@ -140,6 +144,8 @@ function calculateEpicProgress(tasks: Task[]): number {
 export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
   // Set internal state based on prop
   const [selectedEpicState, setSelectedEpicState] = React.useState<string | undefined>(selectedEpic);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   
   // Update internal state when prop changes
   React.useEffect(() => {
@@ -170,6 +176,18 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
       total: epicTasks.length
     };
   }, [selectedEpicState]);
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setSelectedTask(null);
+    // In a real app, this would save the updated task to the backend
+    // and refresh the task list
+  };
   
   return (
     <div className="w-full animate-fade-in rounded-md bg-white/80 p-4 border border-gray-100 shadow-sm">
@@ -226,7 +244,11 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                 {filteredTasks
                   .filter(task => task.status === "todo")
                   .map(task => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard 
+                      key={task.id} 
+                      task={task} 
+                      onEdit={() => handleEditTask(task)}
+                    />
                   ))
                 }
               </div>
@@ -244,7 +266,11 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                 {filteredTasks
                   .filter(task => task.status === "inProgress")
                   .map(task => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard 
+                      key={task.id} 
+                      task={task} 
+                      onEdit={() => handleEditTask(task)}
+                    />
                   ))
                 }
               </div>
@@ -262,7 +288,11 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
                 {filteredTasks
                   .filter(task => task.status === "done")
                   .map(task => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard 
+                      key={task.id} 
+                      task={task} 
+                      onEdit={() => handleEditTask(task)}
+                    />
                   ))
                 }
               </div>
@@ -273,11 +303,31 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
         <TabsContent value="list">
           <div className="space-y-3">
             {filteredTasks.map(task => (
-              <TaskCard key={task.id} task={task} listView />
+              <TaskCard 
+                key={task.id} 
+                task={task} 
+                listView 
+                onEdit={() => handleEditTask(task)}
+              />
             ))}
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Task Edit Dialog */}
+      {selectedTask && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogTitle>Edit Task</DialogTitle>
+            <TaskSubmissionForm 
+              onSuccess={handleEditSuccess} 
+              onCancel={() => setIsEditDialogOpen(false)}
+              isProductIdea={false}
+              initialValues={selectedTask}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
@@ -285,11 +335,12 @@ export function KanbanBoard({ selectedEpic }: KanbanBoardProps) {
 interface TaskCardProps {
   task: Task;
   listView?: boolean;
+  onEdit?: () => void;
 }
 
-function TaskCard({ task, listView }: TaskCardProps) {
+function TaskCard({ task, listView, onEdit }: TaskCardProps) {
   return (
-    <Card className={`task-card ${listView ? 'flex justify-between items-center' : ''}`}>
+    <Card className={`task-card relative ${listView ? 'flex justify-between items-center' : ''}`}>
       <div className="w-full">
         <div className={`flex ${listView ? 'items-center' : 'flex-col space-y-2'}`}>
           <div className={`${listView ? 'flex-1' : 'w-full'}`}>
@@ -327,6 +378,20 @@ function TaskCard({ task, listView }: TaskCardProps) {
           </div>
         </div>
       </div>
+      
+      {/* Edit button */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onEdit) onEdit();
+        }}
+      >
+        <Pencil className="h-4 w-4" />
+        <span className="sr-only">Edit task</span>
+      </Button>
     </Card>
   );
 }
