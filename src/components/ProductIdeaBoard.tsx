@@ -12,6 +12,12 @@ interface ProductIdeaBoardProps {
     completedTasks: number;
     totalTasks: number;
   })[];
+  onIdeaClick?: (idea: ProductIdea & {
+    linkedEpics: string[];
+    progress: number;
+    completedTasks: number;
+    totalTasks: number;
+  }) => void;
 }
 
 type StatusColumnType = 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented';
@@ -24,7 +30,7 @@ const statusColumns: { key: StatusColumnType; label: string }[] = [
   { key: 'implemented', label: 'Implemented' }
 ];
 
-export function ProductIdeaBoard({ ideas }: ProductIdeaBoardProps) {
+export function ProductIdeaBoard({ ideas, onIdeaClick }: ProductIdeaBoardProps) {
   // Group ideas by status
   const ideasByStatus = React.useMemo(() => {
     const grouped = {} as Record<StatusColumnType, typeof ideas>;
@@ -54,7 +60,11 @@ export function ProductIdeaBoard({ ideas }: ProductIdeaBoardProps) {
             <CardContent>
               <div className="space-y-3 max-h-[calc(100vh-240px)] overflow-y-auto pr-1">
                 {ideasByStatus[column.key].map(idea => (
-                  <IdeaCard key={idea.id} idea={idea} />
+                  <IdeaCard 
+                    key={idea.id} 
+                    idea={idea} 
+                    onClick={() => onIdeaClick?.(idea)}
+                  />
                 ))}
                 {ideasByStatus[column.key].length === 0 && (
                   <div className="text-center py-8 text-muted-foreground text-sm">
@@ -70,9 +80,17 @@ export function ProductIdeaBoard({ ideas }: ProductIdeaBoardProps) {
   );
 }
 
-function IdeaCard({ idea }: { idea: ProductIdeaBoardProps['ideas'][0] }) {
+interface IdeaCardProps {
+  idea: ProductIdeaBoardProps['ideas'][0];
+  onClick?: () => void;
+}
+
+function IdeaCard({ idea, onClick }: IdeaCardProps) {
   return (
-    <Card className="mb-3 hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing">
+    <Card 
+      className="mb-3 hover:shadow-md transition-shadow cursor-pointer" 
+      onClick={onClick}
+    >
       <CardContent className="p-3">
         <div>
           <div className="flex justify-between items-start mb-2">

@@ -11,6 +11,7 @@ import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
 import { ProductIdeaBoard } from "@/components/ProductIdeaBoard";
+import { ProductIdeaDetail } from "@/components/ProductIdeaDetail";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -69,6 +70,15 @@ const mockIdeas: (ProductIdea & {
 const ProductIdeas = () => {
   const [isIdeaDialogOpen, setIsIdeaDialogOpen] = React.useState(false);
   const [activeView, setActiveView] = React.useState("cards");
+  const [selectedIdea, setSelectedIdea] = React.useState<(typeof mockIdeas)[0] | null>(null);
+  
+  const handleIdeaClick = (idea: (typeof mockIdeas)[0]) => {
+    setSelectedIdea(idea);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedIdea(null);
+  };
   
   return (
     <MainLayout>
@@ -132,7 +142,11 @@ const ProductIdeas = () => {
           <TabsContent value="cards" className="animate-fade-in mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mockIdeas.map((idea) => (
-                <Card key={idea.id} className="hover-scale">
+                <Card 
+                  key={idea.id} 
+                  className="hover-scale cursor-pointer"
+                  onClick={() => handleIdeaClick(idea)}
+                >
                   <CardHeader>
                     <div className="flex justify-between">
                       <Badge className={
@@ -203,7 +217,11 @@ const ProductIdeas = () => {
                     </thead>
                     <tbody>
                       {mockIdeas.map((idea) => (
-                        <tr key={idea.id} className="border-b hover:bg-muted/50 cursor-pointer">
+                        <tr 
+                          key={idea.id} 
+                          className="border-b hover:bg-muted/50 cursor-pointer"
+                          onClick={() => handleIdeaClick(idea)}
+                        >
                           <td className="p-2 align-middle font-medium">{idea.title}</td>
                           <td className="p-2 align-middle">
                             <Badge className={
@@ -252,7 +270,10 @@ const ProductIdeas = () => {
           </TabsContent>
           
           <TabsContent value="board" className="animate-fade-in mt-0">
-            <ProductIdeaBoard ideas={mockIdeas} />
+            <ProductIdeaBoard 
+              ideas={mockIdeas}
+              onIdeaClick={handleIdeaClick}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -268,6 +289,14 @@ const ProductIdeas = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Product Idea Detail Modal */}
+      {selectedIdea && (
+        <ProductIdeaDetail 
+          idea={selectedIdea} 
+          onClose={handleCloseDetail} 
+        />
+      )}
     </MainLayout>
   );
 };
