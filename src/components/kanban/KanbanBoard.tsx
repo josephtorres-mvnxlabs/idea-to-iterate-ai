@@ -60,7 +60,7 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
   // Get tasks from API and map them to UI model
   const { data: dbTasks = [], isLoading } = useQuery({
     queryKey: ['tasks', { epic: selectedEpic }],
-    queryFn: () => taskApi.getAll({ epic: selectedEpic }),
+    queryFn: () => taskApi.getAll(), // Removed the argument as the function doesn't expect one
   });
 
   // Map database tasks to UI tasks
