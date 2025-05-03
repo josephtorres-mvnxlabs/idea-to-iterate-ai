@@ -1,5 +1,6 @@
 
 import { API_BASE_URL, API_TIMEOUT, ENABLE_API_LOGGING } from '../config/apiConfig';
+import { ProductIdea, Task } from '@/models/database';
 
 interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -13,6 +14,15 @@ interface ApiResponse<T> {
   error: Error | null;
   status: number;
 }
+
+// For phase/status updates
+export interface StatusUpdatePayload<T> {
+  id: string;
+  status: T;
+}
+
+export type TaskStatusUpdatePayload = StatusUpdatePayload<Task['status']>;
+export type ProductIdeaStatusUpdatePayload = StatusUpdatePayload<ProductIdea['status']>;
 
 /**
  * FastAPI client utility for making API requests

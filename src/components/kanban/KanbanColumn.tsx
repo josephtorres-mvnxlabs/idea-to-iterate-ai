@@ -2,13 +2,40 @@
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { TaskCard } from "./TaskCard";
-import { KanbanColumnProps } from "./types";
+import { KanbanColumnProps, Task } from "./types";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function KanbanColumn({ title, tasks, onEditTask }: KanbanColumnProps) {
+export function KanbanColumn({ title, tasks, onEditTask, onDrop, status }: KanbanColumnProps) {
+  // Handle drag over event to allow dropping
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("bg-muted");
+  };
+  
+  // Handle drag leave to reset styling
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.currentTarget.classList.remove("bg-muted");
+  };
+  
+  // Handle drop event to move the task to this column
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("bg-muted");
+    
+    const taskId = e.dataTransfer.getData("text/plain");
+    if (taskId && status && onDrop) {
+      onDrop(taskId, status);
+    }
+  };
+  
   return (
-    <div className="kanban-column bg-gray-50 p-4 rounded-lg border">
+    <div 
+      className="kanban-column bg-gray-50 p-4 rounded-lg border transition-colors"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <h3 className="font-medium text-sm">{title}</h3>

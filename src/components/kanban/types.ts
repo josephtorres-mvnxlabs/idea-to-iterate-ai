@@ -30,6 +30,8 @@ export interface KanbanColumnProps {
   title: string;
   tasks: Task[];
   onEditTask: (task: Task) => void;
+  onDrop?: (taskId: string, newStatus: "todo" | "inProgress" | "done") => void;
+  status?: "todo" | "inProgress" | "done";
 }
 
 export interface KanbanBoardProps {

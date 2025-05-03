@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { MOCK_USERS } from "@/services/mockData";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { productIdeaApi } from "@/services/api";
 
 // Enhanced mock ideas with completed vs total tasks
 const mockIdeas: (ProductIdea & { 
@@ -102,6 +104,25 @@ const ProductIdeas = () => {
     direction: 'asc'
   });
   
+  const queryClient = useQueryClient();
+  
+  // Status update mutation
+  const updateIdeaStatus = useMutation({
+    mutationFn: ({ ideaId, status }: { ideaId: string, status: ProductIdea["status"] }) => {
+      console.log(`Updating product idea ${ideaId} status to ${status}`);
+      return productIdeaApi.update(ideaId, { status });
+    },
+    onSuccess: () => {
+      toast.success("Product idea status updated");
+      // Update local state
+      queryClient.invalidateQueries({ queryKey: ['product-ideas'] });
+    },
+    onError: (error) => {
+      console.error("Error updating product idea status:", error);
+      toast.error("Failed to update status");
+    }
+  });
+  
   const handleIdeaClick = (idea: (typeof ideas)[0]) => {
     setSelectedIdea(idea);
   };
@@ -118,6 +139,32 @@ const ProductIdeas = () => {
     );
     
     toast.success("Product idea updated successfully");
+  };
+  
+  // Handle idea status change from drag and drop
+  const handleIdeaStatusChange = (ideaId: string, newStatus: ProductIdea["status"]) => {
+    // Find idea to update
+    const ideaToUpdate = ideas.find(idea => idea.id === ideaId);
+    
+    if (!ideaToUpdate) {
+      toast.error("Product idea not found");
+      return;
+    }
+    
+    // If status is already the same, do nothing
+    if (ideaToUpdate.status === newStatus) {
+      return;
+    }
+    
+    // Call mutation to update status
+    updateIdeaStatus.mutate({ ideaId, status: newStatus });
+    
+    // Update local state immediately for better UX
+    setIdeas(prevIdeas => 
+      prevIdeas.map(idea => 
+        idea.id === ideaId ? { ...idea, status: newStatus } : idea
+      )
+    );
   };
   
   const requestSort = (key: 'status' | 'priority') => {
@@ -193,7 +240,7 @@ const ProductIdeas = () => {
                 <Tabs 
                   value={activeView} 
                   onValueChange={setActiveView} 
-                  defaultValue="board"  // Changed default value from "cards" to "board"
+                  defaultValue="board"
                 >
                   <TabsList className="h-8">
                     <TabsTrigger value="cards" className="text-xs px-3 flex items-center">
@@ -369,6 +416,7 @@ const ProductIdeas = () => {
             <ProductIdeaBoard 
               ideas={ideas}
               onIdeaClick={handleIdeaClick}
+              onStatusChange={handleIdeaStatusChange}
             />
           </TabsContent>
         </Tabs>

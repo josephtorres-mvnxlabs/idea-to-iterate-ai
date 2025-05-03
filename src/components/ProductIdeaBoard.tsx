@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/models/database";
+import { toast } from "sonner";
 
 interface ProductIdeaBoardProps {
   ideas: (ProductIdea & {
@@ -24,6 +25,7 @@ interface ProductIdeaBoardProps {
     owner?: User;
     teamMembers?: User[];
   }) => void;
+  onStatusChange?: (ideaId: string, newStatus: ProductIdea["status"]) => void;
 }
 
 type StatusColumnType = 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented';
@@ -36,7 +38,7 @@ const statusColumns: { key: StatusColumnType; label: string }[] = [
   { key: 'implemented', label: 'Implemented' }
 ];
 
-export function ProductIdeaBoard({ ideas, onIdeaClick }: ProductIdeaBoardProps) {
+export function ProductIdeaBoard({ ideas, onIdeaClick, onStatusChange }: ProductIdeaBoardProps) {
   // Group ideas by status
   const ideasByStatus = React.useMemo(() => {
     const grouped = {} as Record<StatusColumnType, typeof ideas>;
@@ -48,11 +50,40 @@ export function ProductIdeaBoard({ ideas, onIdeaClick }: ProductIdeaBoardProps) 
     return grouped;
   }, [ideas]);
   
+  // Handle drag over for columns
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("bg-muted/50");
+  };
+  
+  // Handle drag leave for columns
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.currentTarget.classList.remove("bg-muted/50");
+  };
+  
+  // Handle drop for columns
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, status: StatusColumnType) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("bg-muted/50");
+    
+    const ideaId = e.dataTransfer.getData("text/plain");
+    if (ideaId && onStatusChange) {
+      console.log(`Moving idea ${ideaId} to ${status}`);
+      onStatusChange(ideaId, status);
+    }
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-auto pb-4">
       {statusColumns.map(column => (
-        <div key={column.key} className="col-span-1">
-          <Card className="h-full">
+        <div 
+          key={column.key} 
+          className="col-span-1"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, column.key)}
+        >
+          <Card className="h-full transition-colors">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-medium">
@@ -92,10 +123,24 @@ interface IdeaCardProps {
 }
 
 function IdeaCard({ idea, onClick }: IdeaCardProps) {
+  // Handle drag start
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData("text/plain", idea.id);
+    e.currentTarget.classList.add("opacity-50");
+  };
+  
+  // Handle drag end
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    e.currentTarget.classList.remove("opacity-50");
+  };
+  
   return (
     <Card 
       className="mb-3 hover:shadow-md transition-shadow cursor-pointer" 
       onClick={onClick}
+      draggable="true"
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <CardContent className="p-3">
         <div>

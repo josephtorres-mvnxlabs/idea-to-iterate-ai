@@ -43,7 +43,7 @@ async function fetchAPI<T>(
 
 // Helper function to get mock data based on endpoint
 function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
-  console.log(`Getting mock data for: ${method} ${endpoint}`);
+  console.log(`Getting mock data for: ${method} ${endpoint} with body:`, body);
   
   // GET requests
   if (method === 'GET') {
@@ -111,6 +111,45 @@ function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
       console.log(`Linking product idea ${ideaId} to epic ${epicId}`);
       // In a real app, this would create a record in the junction table
       return { success: true };
+    }
+  }
+  
+  // PUT requests - update items
+  if (method === 'PUT') {
+    // Update task status
+    if (endpoint.match(new RegExp(`/${TABLES.TASKS}/[\\w-]+/status`))) {
+      const taskId = endpoint.split('/')[2];
+      const newStatus = body.status;
+      
+      console.log(`Updating task ${taskId} status to ${newStatus}`);
+      
+      // Find the task to update
+      const taskIndex = MOCK_TASKS.findIndex(task => task.id === taskId);
+      
+      if (taskIndex !== -1) {
+        // Update the task status
+        MOCK_TASKS[taskIndex].status = newStatus;
+        MOCK_TASKS[taskIndex].updated_at = new Date().toISOString();
+        
+        return MOCK_TASKS[taskIndex];
+      }
+      
+      return { error: "Task not found" };
+    }
+    
+    // Update product idea
+    if (endpoint.match(new RegExp(`/${TABLES.PRODUCT_IDEAS}/[\\w-]+`))) {
+      const ideaId = endpoint.split('/')[2];
+      
+      console.log(`Updating product idea ${ideaId} with:`, body);
+      
+      // This would update the product idea in a real app
+      // For the mock, we'll just return success
+      return { 
+        id: ideaId,
+        ...body,
+        updated_at: new Date().toISOString()
+      };
     }
   }
   

@@ -7,9 +7,10 @@ import { KanbanBoardProps, Task as UITask } from "./types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskApi } from "@/services/api";
 import { Task as DBTask } from "@/models/database";
+import { toast } from "sonner";
 
 // Mapping function to convert database task to UI task
 const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
@@ -60,10 +61,25 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
   };
 };
 
+// Map UI status to DB status
+const mapUIStatusToDBStatus = (uiStatus: "todo" | "inProgress" | "done"): DBTask["status"] => {
+  switch(uiStatus) {
+    case "todo":
+      return "ready";
+    case "inProgress":
+      return "in_progress";
+    case "done":
+      return "done";
+    default:
+      return "ready";
+  }
+};
+
 export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardProps) {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [editingTask, setEditingTask] = React.useState<UITask | null>(null);
+  const queryClient = useQueryClient();
 
   console.log('KanbanBoard - Selected Epic:', selectedEpic);
 
@@ -74,6 +90,23 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
       console.log('Fetching tasks for epic:', selectedEpic || 'all tasks');
       return taskApi.getAll();
     },
+  });
+
+  // Create mutation for updating task status
+  const updateTaskStatus = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string, status: DBTask["status"] }) => {
+      console.log(`Updating task ${taskId} status to ${status}`);
+      return taskApi.updateStatus(taskId, status);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch tasks
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast.success("Task status updated");
+    },
+    onError: (error) => {
+      console.error("Error updating task status:", error);
+      toast.error("Failed to update task status");
+    }
   });
 
   // Set loading state based on query loading state
@@ -116,6 +149,17 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
   const handleTaskDialogClose = () => {
     setIsTaskDialogOpen(false);
     setEditingTask(null);
+  };
+
+  // Handle task drop to change status
+  const handleTaskDrop = (taskId: string, newUIStatus: "todo" | "inProgress" | "done") => {
+    console.log(`Moving task ${taskId} to ${newUIStatus}`);
+    
+    // Convert UI status to DB status
+    const newDBStatus = mapUIStatusToDBStatus(newUIStatus);
+    
+    // Call mutation to update task status
+    updateTaskStatus.mutate({ taskId, status: newDBStatus });
   };
 
   if (isLoading) {
@@ -231,16 +275,22 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
           title="To Do" 
           tasks={todoTasks}
           onEditTask={handleEditTask}
+          onDrop={handleTaskDrop}
+          status="todo"
         />
         <KanbanColumn 
           title="In Progress" 
           tasks={inProgressTasks}
           onEditTask={handleEditTask}
+          onDrop={handleTaskDrop}
+          status="inProgress"
         />
         <KanbanColumn 
           title="Done" 
           tasks={doneTasks}
           onEditTask={handleEditTask}
+          onDrop={handleTaskDrop}
+          status="done"
         />
       </div>
 
