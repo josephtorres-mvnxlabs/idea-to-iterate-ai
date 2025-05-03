@@ -10,9 +10,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
-import { MOCK_EPICS } from "@/services/mockData";
+import { MOCK_EPICS, MOCK_PRODUCT_IDEAS } from "@/services/mockData";
+import { productIdeaApi, epicApi } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "@/components/ui/use-toast";
 
 const EpicsAndTasks = () => {
+  const [selectedIdea, setSelectedIdea] = React.useState<string | undefined>(undefined);
   const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = React.useState(false);
   const [isEpicDialogOpen, setIsEpicDialogOpen] = React.useState(false);
@@ -20,7 +24,34 @@ const EpicsAndTasks = () => {
   const [selectedEpicToEdit, setSelectedEpicToEdit] = React.useState<any | null>(null);
   const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
   
+  // Fetch product ideas
+  const { data: productIdeas = MOCK_PRODUCT_IDEAS } = useQuery({
+    queryKey: ['productIdeas'],
+    queryFn: () => productIdeaApi.getAll(),
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to load product ideas",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Get filtered epics based on selected product idea
+  const filteredEpics = React.useMemo(() => {
+    if (!selectedIdea) return MOCK_EPICS;
+    
+    // In a real implementation, we would fetch epics linked to the selected product idea
+    // For now, we'll use a simple filtering approach with our mock data
+    // This would typically use the productIdeaApi.getLinkedEpics(selectedIdea) function
+    const linkedEpicIds = selectedIdea === 'idea-1' ? ['epic-1', 'epic-3'] : 
+                        selectedIdea === 'idea-2' ? ['epic-2'] : [];
+    
+    return MOCK_EPICS.filter(epic => linkedEpicIds.includes(epic.id));
+  }, [selectedIdea]);
+  
   console.log('EpicsAndTasks - Selected Epic ID:', selectedEpic);
+  console.log('EpicsAndTasks - Selected Idea ID:', selectedIdea);
   
   const handleEditEpic = (epicId: string) => {
     const epic = MOCK_EPICS.find(e => e.id === epicId);
@@ -34,6 +65,13 @@ const EpicsAndTasks = () => {
     setIsEditEpicDialogOpen(false);
     setSelectedEpicToEdit(null);
   };
+
+  // Reset epic selection when product idea changes
+  React.useEffect(() => {
+    if (selectedIdea) {
+      setSelectedEpic(undefined);
+    }
+  }, [selectedIdea]);
 
   return (
     <MainLayout>
@@ -63,6 +101,46 @@ const EpicsAndTasks = () => {
           </div>
         </div>
         
+        {/* Product Ideas Section */}
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center text-devops-purple-dark">
+                <ListTodo className="h-5 w-5 mr-2" />
+                Product Ideas
+              </CardTitle>
+              <Button variant="ghost" size="sm">
+                <Filter className="h-4 w-4 mr-1" />
+                Filter
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {productIdeas.map((idea) => (
+                <Badge 
+                  key={idea.id}
+                  variant={selectedIdea === idea.id ? "default" : "outline"}
+                  className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${
+                    selectedIdea === idea.id ? 'bg-devops-purple border-devops-purple' : ''
+                  }`}
+                  onClick={() => {
+                    console.log('Selecting idea:', idea.id);
+                    setSelectedIdea(selectedIdea === idea.id ? undefined : idea.id);
+                  }}
+                >
+                  {idea.title}
+                </Badge>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-sm text-muted-foreground">
+                {selectedIdea ? `Viewing: ${productIdeas.find(i => i.id === selectedIdea)?.title}` : 'Showing all product ideas'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
         {/* Epics Section */}
         <Card className="mb-6">
           <CardHeader className="pb-3">
@@ -79,7 +157,7 @@ const EpicsAndTasks = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {MOCK_EPICS.map((epic) => (
+              {filteredEpics.map((epic) => (
                 <Badge 
                   key={epic.id}
                   variant={selectedEpic === epic.id ? "default" : "outline"}
@@ -109,7 +187,8 @@ const EpicsAndTasks = () => {
             </div>
             <div className="mt-4 flex justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                {selectedEpic ? `Viewing: ${MOCK_EPICS.find(e => e.id === selectedEpic)?.title}` : 'Showing all tasks'}
+                {selectedEpic ? `Viewing: ${filteredEpics.find(e => e.id === selectedEpic)?.title}` : 
+                 selectedIdea ? `Showing epics for: ${productIdeas.find(i => i.id === selectedIdea)?.title}` : 'Showing all epics'}
               </div>
             </div>
           </CardContent>
