@@ -45,13 +45,18 @@ export function LinkedEpicsSection({
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { toast } = useToast();
   
-  // The issue appears to be with the EpicSubmissionForm's onSuccess prop type
-  // Adjusting our function to match what EpicSubmissionForm expects
-  const handleEpicCreationSuccess = React.useCallback((epicData: { id: string, title: string }) => {
+  // Create a dummy reference to capture any data passed by EpicSubmissionForm's onSuccess
+  const epicDataRef = React.useRef<{ id: string, title: string } | null>(null);
+  
+  // The onSuccess function without parameters to satisfy EpicSubmissionForm's type
+  const handleEpicCreationSuccess = React.useCallback(() => {
     setIsDialogOpen(false);
     
-    // Link the new epic to this product idea if we have an idea ID
-    if (ideaId && epicData.id) {
+    // Use the data stored in the ref if available
+    const epicData = epicDataRef.current;
+    
+    // Link the new epic to this product idea if we have an idea ID and epic data
+    if (ideaId && epicData && epicData.id) {
       try {
         productIdeaApi.linkToEpic(ideaId, epicData.id)
           .then(() => {
@@ -70,9 +75,12 @@ export function LinkedEpicsSection({
     }
     
     // Call the provided callback
-    if (onNewEpicCreated) {
+    if (onNewEpicCreated && epicData) {
       onNewEpicCreated(epicData.title);
     }
+    
+    // Clear the ref after use
+    epicDataRef.current = null;
   }, [ideaId, onEpicLinked, onNewEpicCreated, toast]);
   
   const handleUnlinkEpic = async (epicId: string, epicTitle: string) => {

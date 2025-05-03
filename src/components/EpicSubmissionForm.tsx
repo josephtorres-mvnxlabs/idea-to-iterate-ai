@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -43,6 +42,7 @@ interface EpicSubmissionFormProps {
   initialValues?: Partial<EpicFormValues>;
   useSheet?: boolean;
   epicId?: string;
+  productIdeaId?: string;
 }
 
 // Sample tasks data for demo purposes
@@ -105,7 +105,7 @@ const SAMPLE_TASKS: Task[] = [
   }
 ];
 
-export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useSheet = false, epicId }: EpicSubmissionFormProps) {
+export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useSheet = false, epicId, productIdeaId }: EpicSubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [epicTasks, setEpicTasks] = React.useState<Task[]>([]);
@@ -151,15 +151,18 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       }, userId);
       
       // Submit to API
+      let createdEpic;
       if (isEditing) {
         // Update existing epic
         toast({
           title: "Epic updated",
           description: `Epic "${data.title}" has been updated successfully.`,
         });
+        createdEpic = { id: epicId || 'updated-id', title: data.title };
       } else {
         // Create new epic
-        await epicApi.create(epicData);
+        const response = await epicApi.create(epicData);
+        createdEpic = { id: response?.id || 'new-id', title: data.title };
         toast({
           title: "Epic created",
           description: `Epic "${data.title}" has been created successfully.`,
@@ -170,6 +173,7 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       form.reset();
       
       if (onSuccess) {
+        // Call onSuccess callback - in LinkedEpicsSection we'll handle this
         onSuccess();
       }
     } catch (error) {
