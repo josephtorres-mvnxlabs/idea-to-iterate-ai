@@ -3,7 +3,7 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +17,29 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ProductIdea } from "@/models/database";
+import { ProductIdea, User } from "@/models/database";
 import { Badge } from "./ui/badge";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -27,6 +48,7 @@ const formSchema = z.object({
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
+  owner_id: z.string().min(1, "Owner is required"),
 });
 
 interface EditProductIdeaFormProps {
@@ -35,21 +57,38 @@ interface EditProductIdeaFormProps {
     progress: number;
     completedTasks: number;
     totalTasks: number;
+    owner?: User;
+    teamMembers?: User[];
   };
-  onSave: (updatedIdea: Partial<ProductIdea> & { linkedEpics?: string[] }) => void;
+  onSave: (updatedIdea: Partial<ProductIdea> & { 
+    linkedEpics?: string[];
+    owner_id?: string;
+    team_members?: string[];
+  }) => void;
   onCancel: () => void;
   availableEpics?: string[];
+  availableUsers?: User[];
 }
 
 export function EditProductIdeaForm({ 
   idea, 
   onSave, 
   onCancel,
-  availableEpics = ["ML-Driven Recommendations", "Performance Optimization Initiative", "Mobile App Strategy", "User Engagement Analytics", "Cloud Migration Project"]
+  availableEpics = ["ML-Driven Recommendations", "Performance Optimization Initiative", "Mobile App Strategy", "User Engagement Analytics", "Cloud Migration Project"],
+  availableUsers = [
+    { id: "user-1", name: "Alex Johnson", email: "alex.j@company.com", role: "admin", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=1" },
+    { id: "user-2", name: "Maria Garcia", email: "maria.g@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=2" },
+    { id: "user-3", name: "Tyler Smith", email: "tyler.s@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=3" },
+    { id: "user-4", name: "Sam Wong", email: "sam.w@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=4" },
+    { id: "user-5", name: "Jamie Lee", email: "jamie.l@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=5" },
+    { id: "user-6", name: "Robin Chen", email: "robin.c@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=6" }
+  ]
 }: EditProductIdeaFormProps) {
   const [linkedEpics, setLinkedEpics] = React.useState<string[]>(idea.linkedEpics || []);
   const [newEpic, setNewEpic] = React.useState<string>("");
+  const [selectedTeamMembers, setSelectedTeamMembers] = React.useState<User[]>(idea.teamMembers || []);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [teamSelectorOpen, setTeamSelectorOpen] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,6 +97,7 @@ export function EditProductIdeaForm({
       description: idea.description,
       estimation: idea.estimation,
       priority: idea.priority,
+      owner_id: idea.owner?.id || idea.owner_id || availableUsers[0].id,
     },
   });
 
@@ -72,14 +112,30 @@ export function EditProductIdeaForm({
     setLinkedEpics(linkedEpics.filter(e => e !== epic));
   };
 
+  const handleAddTeamMember = (user: User) => {
+    // Check if user is already in team
+    if (!selectedTeamMembers.some(member => member.id === user.id)) {
+      setSelectedTeamMembers([...selectedTeamMembers, user]);
+    }
+    setTeamSelectorOpen(false);
+  };
+
+  const handleRemoveTeamMember = (userId: string) => {
+    setSelectedTeamMembers(selectedTeamMembers.filter(member => member.id !== userId));
+  };
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    
+    // Get team member IDs
+    const teamMemberIds = selectedTeamMembers.map(member => member.id);
     
     // Simulate API call
     setTimeout(() => {
       onSave({
         ...values,
         linkedEpics,
+        team_members: teamMemberIds,
       });
       setIsSubmitting(false);
     }, 600);
@@ -89,6 +145,14 @@ export function EditProductIdeaForm({
   const filteredAvailableEpics = availableEpics.filter(
     epic => !linkedEpics.includes(epic)
   );
+
+  // Filter out users who are already in the team
+  const filteredAvailableUsers = availableUsers.filter(
+    user => !selectedTeamMembers.some(member => member.id === user.id)
+  );
+
+  // Get owner user object
+  const ownerUser = availableUsers.find(user => user.id === form.watch("owner_id"));
 
   return (
     <Form {...form}>
@@ -163,6 +227,113 @@ export function EditProductIdeaForm({
               </FormItem>
             )}
           />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="owner_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Owner</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a product owner" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          {user.avatar_url ? (
+                            <AvatarImage src={user.avatar_url} alt={user.name} />
+                          ) : (
+                            <AvatarFallback>
+                              {user.name.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        {user.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div>
+          <FormLabel>Team Members</FormLabel>
+          <div className="flex flex-wrap gap-2 mt-2 mb-4">
+            {selectedTeamMembers.map((member) => (
+              <Badge key={member.id} className="flex items-center gap-1 py-1.5 px-3">
+                <Avatar className="h-4 w-4 mr-1">
+                  {member.avatar_url ? (
+                    <AvatarImage src={member.avatar_url} alt={member.name} />
+                  ) : (
+                    <AvatarFallback className="text-[10px]">
+                      {member.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                {member.name}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 p-0 ml-1"
+                  onClick={() => handleRemoveTeamMember(member.id)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ))}
+            {selectedTeamMembers.length === 0 && (
+              <div className="text-sm text-muted-foreground">No team members added yet</div>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Popover open={teamSelectorOpen} onOpenChange={setTeamSelectorOpen}>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" size="sm">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Team Member
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search team members..." />
+                  <CommandList>
+                    <CommandEmpty>No members found.</CommandEmpty>
+                    <CommandGroup heading="Available Team Members">
+                      {filteredAvailableUsers.map((user) => (
+                        <CommandItem
+                          key={user.id}
+                          onSelect={() => handleAddTeamMember(user)}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <Avatar className="h-6 w-6">
+                            {user.avatar_url ? (
+                              <AvatarImage src={user.avatar_url} alt={user.name} />
+                            ) : (
+                              <AvatarFallback>
+                                {user.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          {user.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         <div>

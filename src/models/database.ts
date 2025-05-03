@@ -18,6 +18,8 @@ export interface Epic {
   capability_category: 'frontend' | 'backend' | 'infrastructure' | 'data' | 'security' | 'other';
   status: 'planning' | 'in_progress' | 'completed';
   created_by: string; // user_id
+  owner_id: string; // user_id of the owner
+  team_members: string[]; // array of user_ids that are part of this epic's team
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,8 @@ export interface Task {
   description: string;
   epic_id?: string; // Optional as some tasks might not be part of an epic
   assignee_id?: string; // Optional as tasks can be unassigned
+  owner_id: string; // user_id of the task owner
+  team_members: string[]; // array of user_ids that are part of this task's team
   estimation: number; // in days
   priority: 'low' | 'medium' | 'high';
   status: 'backlog' | 'ready' | 'in_progress' | 'review' | 'done';
@@ -47,6 +51,8 @@ export interface ProductIdea {
   estimation: number; // estimated size in days
   priority: 'low' | 'medium' | 'high';
   status: 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented';
+  owner_id: string; // user_id of the owner
+  team_members: string[]; // array of user_ids that are part of this product idea's team
   created_by: string; // user_id
   created_at: string;
   updated_at: string;

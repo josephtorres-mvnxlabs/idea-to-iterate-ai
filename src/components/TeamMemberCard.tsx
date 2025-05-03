@@ -12,11 +12,16 @@ interface TeamMember {
   name: string;
   role: string;
   email: string;
-  avatar_url?: string; // Changed from avatar to avatar_url to match User model
+  avatar_url?: string;
   initials: string;
   activeTasks: number;
   completedTasks: number;
   epics: string[];
+  ownedItems?: {
+    products: number;
+    epics: number;
+    tasks: number;
+  };
 }
 
 interface TeamMemberCardProps {
@@ -60,6 +65,26 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
               <p className="text-xs text-muted-foreground">Epics</p>
             </div>
           </div>
+          
+          {member.ownedItems && (
+            <div className="mt-3 bg-muted/30 p-2 rounded-md w-full">
+              <p className="text-xs font-medium mb-1">Ownership</p>
+              <div className="flex justify-around text-xs">
+                <div>
+                  <p className="font-medium">{member.ownedItems.products}</p>
+                  <p className="text-muted-foreground">Products</p>
+                </div>
+                <div>
+                  <p className="font-medium">{member.ownedItems.epics}</p>
+                  <p className="text-muted-foreground">Epics</p>
+                </div>
+                <div>
+                  <p className="font-medium">{member.ownedItems.tasks}</p>
+                  <p className="text-muted-foreground">Tasks</p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="flex flex-wrap gap-1 justify-center mt-2">
             {member.epics.map((epic, index) => (

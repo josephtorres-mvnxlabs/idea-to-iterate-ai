@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "@/models/database";
 
 interface ProductIdeaBoardProps {
   ideas: (ProductIdea & {
@@ -11,12 +13,16 @@ interface ProductIdeaBoardProps {
     progress: number;
     completedTasks: number;
     totalTasks: number;
+    owner?: User;
+    teamMembers?: User[];
   })[];
   onIdeaClick?: (idea: ProductIdea & {
     linkedEpics: string[];
     progress: number;
     completedTasks: number;
     totalTasks: number;
+    owner?: User;
+    teamMembers?: User[];
   }) => void;
 }
 
@@ -126,6 +132,48 @@ function IdeaCard({ idea, onClick }: IdeaCardProps) {
               </div>
             </div>
           )}
+          
+          {/* Owner and team section */}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex -space-x-2 overflow-hidden">
+              {idea.owner && (
+                <div className="relative" title={`Owner: ${idea.owner.name}`}>
+                  <Avatar className="h-6 w-6 ring-2 ring-background">
+                    {idea.owner.avatar_url ? (
+                      <AvatarImage src={idea.owner.avatar_url} alt={idea.owner.name} />
+                    ) : (
+                      <AvatarFallback className="bg-devops-purple text-white text-xs">
+                        {idea.owner.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 ring-1 ring-white" />
+                </div>
+              )}
+              
+              {idea.teamMembers && idea.teamMembers.slice(0, 2).map((member, i) => (
+                <Avatar key={member.id} className="h-6 w-6 ring-2 ring-background">
+                  {member.avatar_url ? (
+                    <AvatarImage src={member.avatar_url} alt={member.name} />
+                  ) : (
+                    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                      {member.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+              ))}
+              
+              {idea.teamMembers && idea.teamMembers.length > 2 && (
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted ring-2 ring-background text-xs">
+                  +{idea.teamMembers.length - 2}
+                </div>
+              )}
+            </div>
+            
+            <span className="text-xs text-muted-foreground">
+              {idea.estimation} days
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

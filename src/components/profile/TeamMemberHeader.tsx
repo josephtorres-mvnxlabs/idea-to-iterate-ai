@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface TeamMemberHeaderProps {
   name: string;
@@ -12,6 +13,11 @@ interface TeamMemberHeaderProps {
   activeTasks: number;
   completedTasks: number;
   epicCount: number;
+  ownedItems?: {
+    products: number;
+    epics: number;
+    tasks: number;
+  };
 }
 
 export function TeamMemberHeader({
@@ -22,7 +28,8 @@ export function TeamMemberHeader({
   initials,
   activeTasks,
   completedTasks,
-  epicCount
+  epicCount,
+  ownedItems
 }: TeamMemberHeaderProps) {
   console.log("TeamMemberHeader - name:", name);
   console.log("TeamMemberHeader - avatar_url:", avatar_url);
@@ -65,6 +72,26 @@ export function TeamMemberHeader({
           <p className="text-xs text-muted-foreground">Epics</p>
         </div>
       </div>
+      
+      {ownedItems && (
+        <div className="mt-4 w-full max-w-sm">
+          <p className="text-sm font-medium mb-2">Ownership</p>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="bg-muted/30 p-3 rounded-md">
+              <Badge variant="secondary" className="mb-1">{ownedItems.products}</Badge>
+              <p className="text-xs text-muted-foreground">Product Ideas</p>
+            </div>
+            <div className="bg-muted/30 p-3 rounded-md">
+              <Badge variant="secondary" className="mb-1">{ownedItems.epics}</Badge>
+              <p className="text-xs text-muted-foreground">Epics</p>
+            </div>
+            <div className="bg-muted/30 p-3 rounded-md">
+              <Badge variant="secondary" className="mb-1">{ownedItems.tasks}</Badge>
+              <p className="text-xs text-muted-foreground">Tasks</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
