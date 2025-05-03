@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/MainLayout";
@@ -142,17 +143,20 @@ const TeamMemberProfile = () => {
       .filter(epic => userEpicIds.has(epic.id))
       .map(epic => epic.title);
 
-    // Calculate user initials
-    const nameParts = userData.name.split(' ');
-    const initials = nameParts.length > 1 
-      ? `${nameParts[0][0]}${nameParts[1][0]}` 
-      : `${nameParts[0][0]}`;
+    // Calculate user initials - Fixed to handle undefined name
+    let initials = "??";
+    if (userData.name) {
+      const nameParts = userData.name.split(' ');
+      initials = nameParts.length > 1 
+        ? `${nameParts[0][0]}${nameParts[1][0]}` 
+        : `${nameParts[0][0]}`;
+    }
 
     return {
       id: userData.id,
-      name: userData.name,
-      role: userData.role,
-      email: userData.email,
+      name: userData.name || "Unknown User",
+      role: userData.role || "No Role Assigned",
+      email: userData.email || "no-email@example.com",
       avatar: userData.avatar_url,
       initials: initials,
       activeTasks,
