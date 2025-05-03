@@ -2,13 +2,12 @@
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mail } from "lucide-react";
-import { User } from "@/models/database";
 
 interface TeamMemberHeaderProps {
   name: string;
   role: string;
   email: string;
-  avatar?: string; // We'll keep the prop name as avatar for component API consistency
+  avatar_url?: string; // Changed prop name to match User model
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -19,7 +18,7 @@ export function TeamMemberHeader({
   name,
   role,
   email,
-  avatar, // This is now coming from avatar_url from the User model
+  avatar_url, // Now using avatar_url consistently
   initials,
   activeTasks,
   completedTasks,
@@ -29,8 +28,8 @@ export function TeamMemberHeader({
     <div className="p-6 flex flex-col items-center text-center">
       <div className="h-2 bg-devops-purple w-full absolute top-0 left-0 right-0" />
       <Avatar className="h-24 w-24 my-6">
-        {avatar ? (
-          <AvatarImage src={avatar} alt={name} />
+        {avatar_url ? (
+          <AvatarImage src={avatar_url} alt={name} />
         ) : (
           <AvatarFallback className="bg-devops-purple text-white text-xl">
             {initials}

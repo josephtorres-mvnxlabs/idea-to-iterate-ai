@@ -9,7 +9,7 @@ interface TeamMember {
   name: string;
   role: string;
   email: string;
-  avatar_url?: string; // Changed from avatar to avatar_url to match User model
+  avatar_url?: string; // Using avatar_url to match User model
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -49,13 +49,13 @@ export function useTeamMember(userId: string | undefined) {
 
   const isLoading = isLoadingUser || isLoadingTasks || isLoadingEpics;
 
-  // Process the data to create our team member profile
+  // Process the data to create our team member profile with defensive coding
   const teamMember: TeamMember | undefined = userData ? {
     id: userData.id,
     name: userData.name || "Unknown User",
     role: userData.role || "No Role Assigned",
     email: userData.email || "no-email@example.com",
-    avatar_url: userData.avatar_url, // Changed from avatar to avatar_url to match User model
+    avatar_url: userData.avatar_url,
     initials: getUserInitials(userData),
     activeTasks: userTasks.filter(task => task.status !== 'done').length,
     completedTasks: userTasks.filter(task => task.status === 'done').length,
@@ -79,9 +79,11 @@ function getUserInitials(user: User): string {
   if (!user.name) return "??";
   
   const nameParts = user.name.split(' ');
-  return nameParts.length > 1 
-    ? `${nameParts[0][0]}${nameParts[1][0]}` 
-    : `${nameParts[0][0]}`;
+  if (nameParts.length === 0) return "??";
+  
+  return nameParts.length > 1 && nameParts[1] && nameParts[1][0]
+    ? `${nameParts[0][0]}${nameParts[1][0]}`
+    : nameParts[0][0] ? `${nameParts[0][0]}` : "??";
 }
 
 // Helper function to get epic titles
