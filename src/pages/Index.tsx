@@ -14,6 +14,7 @@ import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 
 const Index = () => {
   const [open, setOpen] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<"kanban" | "list">("kanban");
 
   return (
     <MainLayout>
@@ -57,7 +58,7 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="tasks">
-          <KanbanBoard />
+          <KanbanBoard viewMode={viewMode} />
         </TabsContent>
         
         <TabsContent value="newRequest">
