@@ -63,6 +63,8 @@ export interface EpicWithTasks extends Epic {
   tasks: Task[];
   completion_percentage: number;
   total_estimation: number;
+  completed_tasks_count: number;
+  total_tasks_count: number;
 }
 
 export interface UserWithTasks extends User {
@@ -71,8 +73,10 @@ export interface UserWithTasks extends User {
 }
 
 export interface ProductIdeaWithEpics extends ProductIdea {
-  epics: Epic[];
+  epics: EpicWithTasks[];
   implementation_status: number; // percentage of completion based on linked epics
+  completed_tasks_count: number;
+  total_tasks_count: number;
 }
 
 // Define the table names for use in API calls

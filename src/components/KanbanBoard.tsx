@@ -1,8 +1,10 @@
+
 import * as React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 
 interface Task {
   id: string;
@@ -124,7 +126,41 @@ function getStatusLabel(status: string) {
   }
 }
 
+// Calculate epic progress based on tasks
+function calculateEpicProgress(tasks: Task[]): number {
+  if (!tasks || tasks.length === 0) return 0;
+  const completedTasks = tasks.filter(task => task.status === "done").length;
+  return Math.round((completedTasks / tasks.length) * 100);
+}
+
 export function KanbanBoard() {
+  const [selectedEpic, setSelectedEpic] = React.useState<string | undefined>(undefined);
+  
+  // Get tasks filtered by selected epic
+  const filteredTasks = React.useMemo(() => {
+    if (!selectedEpic) return SAMPLE_TASKS;
+    return SAMPLE_TASKS.filter(task => task.epic === selectedEpic);
+  }, [selectedEpic]);
+  
+  // Get all unique epics from tasks
+  const uniqueEpics = React.useMemo(() => {
+    return [...new Set(SAMPLE_TASKS.map(task => task.epic))];
+  }, []);
+  
+  // Calculate progress for selected epic
+  const epicProgress = React.useMemo(() => {
+    if (!selectedEpic) return null;
+    const epicTasks = SAMPLE_TASKS.filter(task => task.epic === selectedEpic);
+    const progress = calculateEpicProgress(epicTasks);
+    const completedCount = epicTasks.filter(task => task.status === "done").length;
+    
+    return {
+      progress,
+      completed: completedCount,
+      total: epicTasks.length
+    };
+  }, [selectedEpic]);
+  
   return (
     <div className="w-full animate-fade-in">
       <Tabs defaultValue="kanban" className="w-full">
@@ -134,10 +170,34 @@ export function KanbanBoard() {
             <TabsTrigger value="list">List View</TabsTrigger>
           </TabsList>
           <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="text-xs">
-              Epic: User Authentication System Overhaul
-            </Badge>
+            {selectedEpic && (
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-xs">
+                  Epic: {selectedEpic}
+                </Badge>
+                {epicProgress && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span>{epicProgress.completed} of {epicProgress.total} tasks done</span>
+                    <Progress value={epicProgress.progress} className="w-20 h-2" />
+                    <span>{epicProgress.progress}%</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+        </div>
+        
+        <div className="mb-4 flex flex-wrap gap-2">
+          {uniqueEpics.map(epic => (
+            <Badge 
+              key={epic}
+              variant="outline" 
+              className={`text-sm py-2 cursor-pointer hover:bg-devops-purple/10 ${selectedEpic === epic ? 'bg-devops-purple/20 border-devops-purple' : ''}`}
+              onClick={() => setSelectedEpic(epic === selectedEpic ? undefined : epic)}
+            >
+              {epic}
+            </Badge>
+          ))}
         </div>
         
         <TabsContent value="kanban" className="w-full">
@@ -147,11 +207,11 @@ export function KanbanBoard() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-medium text-sm">TO DO</h3>
                 <Badge variant="outline" className="text-xs">
-                  {SAMPLE_TASKS.filter(t => t.status === "todo").length}
+                  {filteredTasks.filter(t => t.status === "todo").length}
                 </Badge>
               </div>
               <div className="kanban-column">
-                {SAMPLE_TASKS
+                {filteredTasks
                   .filter(task => task.status === "todo")
                   .map(task => (
                     <TaskCard key={task.id} task={task} />
@@ -165,11 +225,11 @@ export function KanbanBoard() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-medium text-sm">IN PROGRESS</h3>
                 <Badge variant="outline" className="text-xs">
-                  {SAMPLE_TASKS.filter(t => t.status === "inProgress").length}
+                  {filteredTasks.filter(t => t.status === "inProgress").length}
                 </Badge>
               </div>
               <div className="kanban-column">
-                {SAMPLE_TASKS
+                {filteredTasks
                   .filter(task => task.status === "inProgress")
                   .map(task => (
                     <TaskCard key={task.id} task={task} />
@@ -183,11 +243,11 @@ export function KanbanBoard() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-medium text-sm">DONE</h3>
                 <Badge variant="outline" className="text-xs">
-                  {SAMPLE_TASKS.filter(t => t.status === "done").length}
+                  {filteredTasks.filter(t => t.status === "done").length}
                 </Badge>
               </div>
               <div className="kanban-column">
-                {SAMPLE_TASKS
+                {filteredTasks
                   .filter(task => task.status === "done")
                   .map(task => (
                     <TaskCard key={task.id} task={task} />
@@ -200,7 +260,7 @@ export function KanbanBoard() {
         
         <TabsContent value="list">
           <div className="space-y-3">
-            {SAMPLE_TASKS.map(task => (
+            {filteredTasks.map(task => (
               <TaskCard key={task.id} task={task} listView />
             ))}
           </div>

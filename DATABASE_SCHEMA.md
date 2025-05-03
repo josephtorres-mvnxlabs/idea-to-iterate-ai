@@ -78,11 +78,21 @@ This document outlines the database schema for the DevFlow application.
 - Product ideas can be linked to multiple epics (many-to-many)
 - Epics can be linked to multiple product ideas (many-to-many)
 
+## Progress Calculation
+
+- Task progress: Binary (done or not done)
+- Epic progress: Percentage of tasks in 'done' status
+- Product Idea progress: Percentage of all tasks across linked epics in 'done' status
+
 ## Views
 
 ### EpicWithTasks
 
-Combines epic data with associated tasks and calculates progress metrics.
+Combines epic data with associated tasks and calculates progress metrics:
+- completion_percentage: Percentage of tasks marked as 'done'
+- total_estimation: Sum of all task estimations
+- completed_tasks_count: Number of tasks in 'done' status
+- total_tasks_count: Total number of tasks associated with the epic
 
 ### UserWithTasks
 
@@ -90,7 +100,10 @@ Combines user data with their assigned tasks and calculates workload metrics.
 
 ### ProductIdeaWithEpics
 
-Combines product idea data with associated epics and calculates implementation status.
+Combines product idea data with associated epics and calculates implementation status:
+- implementation_status: Percentage of all tasks across linked epics marked as 'done'
+- completed_tasks_count: Total number of completed tasks across all linked epics
+- total_tasks_count: Total number of tasks across all linked epics
 
 ## API Endpoints
 
@@ -102,6 +115,7 @@ Combines product idea data with associated epics and calculates implementation s
 - `PUT /api/epics/:id` - Update an epic
 - `DELETE /api/epics/:id` - Delete an epic
 - `GET /api/epics/:id/tasks` - Get all tasks for an epic
+- `GET /api/epics/with-tasks` - Get all epics with their tasks and progress calculations
 
 ### Tasks
 
@@ -129,3 +143,4 @@ Combines product idea data with associated epics and calculates implementation s
 - `GET /api/product-ideas/:id/epics` - Get all epics linked to a product idea
 - `POST /api/product-ideas/:id/epics/:epicId` - Link a product idea to an epic
 - `DELETE /api/product-ideas/:id/epics/:epicId` - Unlink a product idea from an epic
+- `GET /api/product-ideas/with-epics` - Get all product ideas with their linked epics and progress calculations

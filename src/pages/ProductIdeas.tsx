@@ -11,7 +11,13 @@ import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { Progress } from "@/components/ui/progress";
 import { ProductIdea } from "@/models/database";
 
-const mockIdeas: (ProductIdea & { linkedEpics: string[], progress: number })[] = [
+// Enhanced mock ideas with completed vs total tasks
+const mockIdeas: (ProductIdea & { 
+  linkedEpics: string[], 
+  progress: number,
+  completedTasks: number,
+  totalTasks: number 
+})[] = [
   {
     id: '1',
     title: 'AI-Assisted Code Refactoring',
@@ -23,7 +29,9 @@ const mockIdeas: (ProductIdea & { linkedEpics: string[], progress: number })[] =
     created_at: '2023-05-15T10:30:00Z',
     updated_at: '2023-05-15T10:30:00Z',
     linkedEpics: ['ML-Driven Recommendations', 'Performance Optimization Initiative'],
-    progress: 35
+    progress: 35,
+    completedTasks: 7,
+    totalTasks: 20
   },
   {
     id: '2',
@@ -36,7 +44,9 @@ const mockIdeas: (ProductIdea & { linkedEpics: string[], progress: number })[] =
     created_at: '2023-06-02T14:45:00Z',
     updated_at: '2023-06-10T09:15:00Z',
     linkedEpics: ['Performance Optimization Initiative'],
-    progress: 10
+    progress: 10,
+    completedTasks: 2,
+    totalTasks: 15
   },
   {
     id: '3',
@@ -49,7 +59,9 @@ const mockIdeas: (ProductIdea & { linkedEpics: string[], progress: number })[] =
     created_at: '2023-07-10T11:20:00Z',
     updated_at: '2023-07-10T11:20:00Z',
     linkedEpics: [],
-    progress: 0
+    progress: 0,
+    completedTasks: 0,
+    totalTasks: 0
   },
 ];
 
@@ -129,7 +141,9 @@ const ProductIdeas = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
                         <span>Implementation Progress</span>
-                        <span className="font-medium">{idea.progress}%</span>
+                        <span className="font-medium">
+                          {idea.progress}% ({idea.completedTasks} of {idea.totalTasks} tasks)
+                        </span>
                       </div>
                       <Progress value={idea.progress} />
                       
@@ -171,6 +185,7 @@ const ProductIdeas = () => {
                         <th className="h-10 px-2 text-left font-medium">Priority</th>
                         <th className="h-10 px-2 text-left font-medium">Linked Epics</th>
                         <th className="h-10 px-2 text-left font-medium">Progress</th>
+                        <th className="h-10 px-2 text-left font-medium">Tasks</th>
                         <th className="h-10 px-2 text-left font-medium">Estimation</th>
                       </tr>
                     </thead>
@@ -210,6 +225,9 @@ const ProductIdeas = () => {
                               <Progress value={idea.progress} className="h-2" />
                               <span className="text-xs">{idea.progress}%</span>
                             </div>
+                          </td>
+                          <td className="p-2 align-middle">
+                            <span className="text-xs">{idea.completedTasks}/{idea.totalTasks}</span>
                           </td>
                           <td className="p-2 align-middle">{idea.estimation} days</td>
                         </tr>

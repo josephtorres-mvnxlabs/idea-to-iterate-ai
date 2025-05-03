@@ -1,5 +1,5 @@
 
-import { Epic, Task, User, TABLES } from '../models/database';
+import { Epic, Task, User, ProductIdea, TABLES, EpicWithTasks, ProductIdeaWithEpics } from '../models/database';
 
 // Base API URL - In a real app, this would come from environment variables
 const API_BASE_URL = '/api';
@@ -52,7 +52,16 @@ export const epicApi = {
   
   delete: (id: string) => fetchAPI<void>(`/${TABLES.EPICS}/${id}`, 'DELETE'),
   
-  getWithTasks: (id: string) => fetchAPI<Epic & { tasks: Task[] }>(`/${TABLES.EPICS}/${id}/tasks`)
+  getWithTasks: (id: string) => fetchAPI<EpicWithTasks>(`/${TABLES.EPICS}/${id}/tasks`),
+  
+  getAllWithTasks: () => fetchAPI<EpicWithTasks[]>(`/${TABLES.EPICS}/with-tasks`),
+  
+  calculateProgress: (epic: Epic, tasks: Task[]): number => {
+    if (!tasks || tasks.length === 0) return 0;
+    
+    const completedTasks = tasks.filter(task => task.status === 'done').length;
+    return Math.round((completedTasks / tasks.length) * 100);
+  }
 };
 
 // Task related API calls
@@ -95,8 +104,59 @@ export const userApi = {
     fetchAPI<User>(`/${TABLES.USERS}/${id}`, 'PUT', user)
 };
 
+// Product Idea related API calls
+export const productIdeaApi = {
+  getAll: () => fetchAPI<ProductIdea[]>(`/${TABLES.PRODUCT_IDEAS}`),
+  
+  getById: (id: string) => fetchAPI<ProductIdea>(`/${TABLES.PRODUCT_IDEAS}/${id}`),
+  
+  create: (idea: Omit<ProductIdea, 'id' | 'created_at' | 'updated_at' | 'status'>) => 
+    fetchAPI<ProductIdea>(`/${TABLES.PRODUCT_IDEAS}`, 'POST', {
+      ...idea,
+      status: 'proposed',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }),
+  
+  update: (id: string, idea: Partial<Omit<ProductIdea, 'id' | 'created_at' | 'created_by'>>) => 
+    fetchAPI<ProductIdea>(`/${TABLES.PRODUCT_IDEAS}/${id}`, 'PUT', {
+      ...idea,
+      updated_at: new Date().toISOString()
+    }),
+  
+  delete: (id: string) => fetchAPI<void>(`/${TABLES.PRODUCT_IDEAS}/${id}`, 'DELETE'),
+  
+  getWithEpics: (id: string) => fetchAPI<ProductIdeaWithEpics>(`/${TABLES.PRODUCT_IDEAS}/${id}/epics`),
+  
+  getAllWithEpics: () => fetchAPI<ProductIdeaWithEpics[]>(`/${TABLES.PRODUCT_IDEAS}/with-epics`),
+  
+  linkToEpic: (ideaId: string, epicId: string) => 
+    fetchAPI<void>(`/${TABLES.PRODUCT_IDEAS}/${ideaId}/epics/${epicId}`, 'POST'),
+    
+  unlinkFromEpic: (ideaId: string, epicId: string) => 
+    fetchAPI<void>(`/${TABLES.PRODUCT_IDEAS}/${ideaId}/epics/${epicId}`, 'DELETE'),
+    
+  calculateProgress: (idea: ProductIdea, epicsWithTasks: EpicWithTasks[]): number => {
+    if (!epicsWithTasks || epicsWithTasks.length === 0) return 0;
+    
+    // Count all tasks and completed tasks across all linked epics
+    let totalTasks = 0;
+    let completedTasks = 0;
+    
+    epicsWithTasks.forEach(epic => {
+      if (epic.tasks && epic.tasks.length > 0) {
+        totalTasks += epic.tasks.length;
+        completedTasks += epic.tasks.filter(task => task.status === 'done').length;
+      }
+    });
+    
+    return totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  }
+};
+
 export default {
   epics: epicApi,
   tasks: taskApi,
   users: userApi,
+  productIdeas: productIdeaApi
 };
