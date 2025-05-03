@@ -1,7 +1,8 @@
+
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter, Lightbulb, LayoutGrid, LayoutList, Kanban } from "lucide-react";
+import { Plus, Filter, LayoutGrid, LayoutList, Kanban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -67,6 +68,7 @@ const mockIdeas: (ProductIdea & {
 
 const ProductIdeas = () => {
   const [isIdeaDialogOpen, setIsIdeaDialogOpen] = React.useState(false);
+  const [activeView, setActiveView] = React.useState("cards");
   
   return (
     <MainLayout>
@@ -104,7 +106,11 @@ const ProductIdeas = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm">View:</span>
-                <Tabs defaultValue="cards">
+                <Tabs 
+                  value={activeView} 
+                  onValueChange={setActiveView} 
+                  defaultValue="cards"
+                >
                   <TabsList className="h-8">
                     <TabsTrigger value="cards" className="text-xs px-3 flex items-center">
                       <LayoutGrid className="h-3 w-3 mr-1" /> Cards
@@ -122,8 +128,8 @@ const ProductIdeas = () => {
           </CardContent>
         </Card>
         
-        <Tabs defaultValue="cards" className="w-full">
-          <TabsContent value="cards" className="animate-fade-in">
+        <Tabs value={activeView} className="w-full">
+          <TabsContent value="cards" className="animate-fade-in mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {mockIdeas.map((idea) => (
                 <Card key={idea.id} className="hover-scale">
@@ -179,7 +185,7 @@ const ProductIdeas = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="list" className="animate-fade-in">
+          <TabsContent value="list" className="animate-fade-in mt-0">
             <Card>
               <CardContent className="pt-6">
                 <div className="relative w-full overflow-auto">
@@ -245,7 +251,7 @@ const ProductIdeas = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="board" className="animate-fade-in">
+          <TabsContent value="board" className="animate-fade-in mt-0">
             <ProductIdeaBoard ideas={mockIdeas} />
           </TabsContent>
         </Tabs>
