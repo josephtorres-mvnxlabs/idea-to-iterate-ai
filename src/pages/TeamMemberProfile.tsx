@@ -17,6 +17,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Alex Johnson",
     role: "Frontend Developer",
     email: "alex.j@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=1", // Changed from avatar to avatar_url to match User model
     initials: "AJ",
     activeTasks: 3,
     completedTasks: 12,
@@ -27,6 +28,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Maria Garcia",
     role: "UI/UX Designer",
     email: "maria.g@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=2", // Changed from avatar to avatar_url to match User model
     initials: "MG",
     activeTasks: 2,
     completedTasks: 8,
@@ -37,6 +39,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Tyler Smith",
     role: "DevOps Engineer",
     email: "tyler.s@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=3", // Changed from avatar to avatar_url to match User model
     initials: "TS",
     activeTasks: 0,
     completedTasks: 15,
@@ -47,6 +50,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Sam Wong",
     role: "Backend Developer",
     email: "sam.w@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=4", // Changed from avatar to avatar_url to match User model
     initials: "SW",
     activeTasks: 4,
     completedTasks: 7,
@@ -57,6 +61,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Jamie Lee",
     role: "Data Scientist",
     email: "jamie.l@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=5", // Changed from avatar to avatar_url to match User model
     initials: "JL",
     activeTasks: 1,
     completedTasks: 6,
@@ -67,6 +72,7 @@ const SAMPLE_TEAM_MEMBERS = [
     name: "Robin Chen",
     role: "Product Manager",
     email: "robin.c@company.com",
+    avatar_url: "https://i.pravatar.cc/150?img=6", // Changed from avatar to avatar_url to match User model
     initials: "RC",
     activeTasks: 0,
     completedTasks: 9,
@@ -133,7 +139,7 @@ const TeamMemberProfile = () => {
                 name={memberData.name}
                 role={memberData.role}
                 email={memberData.email}
-                avatar={memberData.avatar}
+                avatar={memberData.avatar_url} // Changed from avatar to avatar_url to match User model
                 initials={memberData.initials}
                 activeTasks={memberData.activeTasks}
                 completedTasks={memberData.completedTasks}

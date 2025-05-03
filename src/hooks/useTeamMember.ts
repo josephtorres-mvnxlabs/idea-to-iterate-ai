@@ -9,7 +9,7 @@ interface TeamMember {
   name: string;
   role: string;
   email: string;
-  avatar?: string;
+  avatar_url?: string; // Changed from avatar to avatar_url to match User model
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -55,7 +55,7 @@ export function useTeamMember(userId: string | undefined) {
     name: userData.name || "Unknown User",
     role: userData.role || "No Role Assigned",
     email: userData.email || "no-email@example.com",
-    avatar: userData.avatar_url,
+    avatar_url: userData.avatar_url, // Changed from avatar to avatar_url to match User model
     initials: getUserInitials(userData),
     activeTasks: userTasks.filter(task => task.status !== 'done').length,
     completedTasks: userTasks.filter(task => task.status === 'done').length,

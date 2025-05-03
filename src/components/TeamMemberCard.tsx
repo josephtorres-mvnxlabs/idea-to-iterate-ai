@@ -12,7 +12,7 @@ interface TeamMember {
   name: string;
   role: string;
   email: string;
-  avatar?: string;
+  avatar_url?: string; // Changed from avatar to avatar_url to match User model
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -30,8 +30,8 @@ export function TeamMemberCard({ member }: TeamMemberCardProps) {
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
           <Avatar className="h-20 w-20 mb-4">
-            {member.avatar ? (
-              <AvatarImage src={member.avatar} alt={member.name} />
+            {member.avatar_url ? (
+              <AvatarImage src={member.avatar_url} alt={member.name} />
             ) : (
               <AvatarFallback className="bg-devops-purple text-white text-lg">
                 {member.initials}

@@ -8,7 +8,7 @@ interface TeamMemberHeaderProps {
   name: string;
   role: string;
   email: string;
-  avatar?: string;
+  avatar?: string; // We'll keep the prop name as avatar for component API consistency
   initials: string;
   activeTasks: number;
   completedTasks: number;
@@ -19,7 +19,7 @@ export function TeamMemberHeader({
   name,
   role,
   email,
-  avatar,
+  avatar, // This is now coming from avatar_url from the User model
   initials,
   activeTasks,
   completedTasks,
