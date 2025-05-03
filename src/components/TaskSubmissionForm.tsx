@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -65,14 +66,14 @@ export function TaskSubmissionForm({
   }, [epicId, taskValues, isEditing]);
 
   // Fetch epics for dropdown
-  const { data: epics } = useQuery({
+  const { data: epics, isLoading: epicsLoading } = useQuery({
     queryKey: ['epics'],
     queryFn: epicApi.getAll,
     placeholderData: [] as Epic[]
   });
 
   // Fetch team members for dropdown
-  const { data: users } = useQuery({
+  const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
     queryFn: userApi.getAll,
     placeholderData: [] as User[]
@@ -276,7 +277,7 @@ export function TaskSubmissionForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Select an existing epic or create a new one
+                  {epicsLoading ? "Loading epics..." : "Select an existing epic or create a new one"}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -292,6 +293,7 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -299,6 +301,7 @@ export function TaskSubmissionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="">Unassigned</SelectItem>
                     {users?.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}
@@ -306,6 +309,9 @@ export function TaskSubmissionForm({
                     ))}
                   </SelectContent>
                 </Select>
+                <FormDescription>
+                  {usersLoading ? "Loading users..." : "Assign this task to a team member"}
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -342,6 +348,7 @@ export function TaskSubmissionForm({
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  value={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>

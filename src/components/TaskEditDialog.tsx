@@ -1,13 +1,11 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
 import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Task } from "@/models/database";
 import { useToast } from "@/hooks/use-toast";
-import { X, Save } from "lucide-react";
 import { epicApi } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,7 +25,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
   const { data: epics } = useQuery({
     queryKey: ['epics'],
     queryFn: epicApi.getAll,
-    enabled: open && !!task?.epic_id,
+    enabled: open && !!task,
   });
   
   // Convert task to form values, ensuring the epic field is correctly set
@@ -37,7 +35,7 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
     return {
       title: task.title,
       description: task.description || "",
-      epic: task.epic_id,  // This ensures the form displays the correct epic
+      epic: task.epic_id,  // Pass the epic_id directly
       assignee: task.assignee_id,
       estimation: task.estimation,
       priority: task.priority,
@@ -97,20 +95,9 @@ export function TaskEditDialog({ open, onOpenChange, task, onSuccess }: TaskEdit
             </DialogDescription>
           </DialogHeader>
           <EpicSubmissionForm 
-            onSuccess={(newEpicId) => handleEpicCreationSuccess(newEpicId)} 
+            onSuccess={handleEpicCreationSuccess}
             onCancel={() => setIsCreatingEpic(false)} 
           />
-          <DialogFooter className="mt-4 pt-4 border-t">
-            <Button variant="outline" onClick={() => setIsCreatingEpic(false)}>
-              <X className="h-4 w-4 mr-1" /> Cancel
-            </Button>
-            <Button 
-              className="bg-devops-purple hover:bg-devops-purple-dark"
-              onClick={() => handleEpicCreationSuccess("new-epic-id")}
-            >
-              <Save className="h-4 w-4 mr-1" /> Create Epic
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
