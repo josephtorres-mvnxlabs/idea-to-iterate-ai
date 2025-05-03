@@ -75,20 +75,6 @@ export function AppSidebar() {
                 <SidebarMenuButton 
                   className={cn(
                     "w-full justify-start", 
-                    isActive('/epics-and-tasks') ? "text-sidebar-primary" : ""
-                  )}
-                  asChild
-                >
-                  <Link to="/epics-and-tasks">
-                    <Book className="w-4 h-4 mr-2" />
-                    <span>Epics & Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className={cn(
-                    "w-full justify-start", 
                     isActive('/product-ideas') ? "text-sidebar-primary" : ""
                   )}
                   asChild
@@ -96,6 +82,20 @@ export function AppSidebar() {
                   <Link to="/product-ideas">
                     <Lightbulb className="w-4 h-4 mr-2" />
                     <span>Product Ideas</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={cn(
+                    "w-full justify-start", 
+                    isActive('/epics-and-tasks') ? "text-sidebar-primary" : ""
+                  )}
+                  asChild
+                >
+                  <Link to="/epics-and-tasks">
+                    <Book className="w-4 h-4 mr-2" />
+                    <span>Epics & Tasks</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -168,3 +168,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
