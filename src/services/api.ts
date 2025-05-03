@@ -1,3 +1,4 @@
+
 import { Epic, Task, User, ProductIdea, TABLES, EpicWithTasks, ProductIdeaWithEpics } from '../models/database';
 import { MOCK_TASKS, MOCK_EPICS, MOCK_USERS } from './mockData';
 import { USE_MOCK_DATA, API_BASE_URL } from '../config/apiConfig';
@@ -103,6 +104,17 @@ function getMockDataForEndpoint(endpoint: string, method: string, body?: any) {
       };
       MOCK_EPICS.push(newEpic);
       return newEpic;
+    }
+    
+    if (endpoint === `/${TABLES.USERS}`) {
+      // Generate a new user with the provided data
+      const newUser: User = {
+        id: `user-${Date.now()}`,
+        ...body,
+        created_at: new Date().toISOString(),
+      };
+      MOCK_USERS.push(newUser);
+      return newUser;
     }
     
     // Handle linking a product idea to an epic
@@ -287,10 +299,19 @@ export const userApi = {
   update: (id: string, user: Partial<Omit<User, 'id' | 'created_at'>>) => 
     fetchAPI<User>(`/${TABLES.USERS}/${id}`, 'PUT', user),
   
+  create: (user: Omit<User, 'id' | 'created_at'>) => 
+    fetchAPI<User>(`/${TABLES.USERS}`, 'POST', {
+      ...user,
+      created_at: new Date().toISOString()
+    }),
+  
   // Database methods for real API connections
   getFromDatabase: () => fetchAPI<User[]>(`/users`),
   
   getByIdFromDatabase: (id: string) => fetchAPI<User>(`/users/${id}`),
+  
+  createInDatabase: (user: Omit<User, 'id' | 'created_at'>) => 
+    fetchAPI<User>(`/users`, 'POST', user),
   
   updateInDatabase: (id: string, user: Partial<Omit<User, 'id' | 'created_at'>>) => 
     fetchAPI<User>(`/users/${id}`, 'PUT', user)
