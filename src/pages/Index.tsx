@@ -57,7 +57,7 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="tasks">
-          <KanbanBoard />
+          <KanbanBoard viewMode="kanban" />
         </TabsContent>
         
         <TabsContent value="newRequest">
