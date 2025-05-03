@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { 
   Sidebar, 
@@ -9,11 +10,9 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
-  SidebarTrigger
+  SidebarFooter
 } from "@/components/ui/sidebar";
-import { Bell, BarChart, Plus, Home, Book, Users, Settings, Lightbulb } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BarChart, Book, Home, Lightbulb, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 
@@ -42,16 +41,6 @@ export function AppSidebar() {
         <AppLogo />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <div className="px-3 py-2">
-              <Button className="w-full justify-start gap-2 bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-foreground">
-                <Plus className="h-4 w-4" />
-                <span>New Request</span>
-              </Button>
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
