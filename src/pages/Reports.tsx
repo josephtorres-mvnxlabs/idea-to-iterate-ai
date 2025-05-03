@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,27 +69,60 @@ interface TimelineDataPoint {
 const Reports = () => {
   const [timeframe, setTimeframe] = React.useState("lastMonth");
 
-  // Fetch all necessary data
-  const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
+  // Fetch all necessary data with proper error handling
+  const { data: tasksData = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['tasks', 'all'],
     queryFn: () => taskApi.getAll(),
+    meta: {
+      onError: (error: Error) => {
+        console.error("Failed to load tasks:", error);
+      }
+    }
   });
 
-  const { data: epics = [], isLoading: isLoadingEpics } = useQuery({
+  const { data: epicsData = [], isLoading: isLoadingEpics } = useQuery({
     queryKey: ['epics'],
     queryFn: () => epicApi.getAll(),
+    meta: {
+      onError: (error: Error) => {
+        console.error("Failed to load epics:", error);
+      }
+    }
   });
 
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
+  const { data: usersData = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users'],
     queryFn: () => userApi.getAll(),
+    meta: {
+      onError: (error: Error) => {
+        console.error("Failed to load users:", error);
+      }
+    }
   });
 
   const isLoading = isLoadingTasks || isLoadingEpics || isLoadingUsers;
 
+  // Ensure data is properly handled as arrays
+  const tasks = React.useMemo(() => 
+    Array.isArray(tasksData) ? tasksData : [], 
+    [tasksData]
+  );
+
+  const epics = React.useMemo(() => 
+    Array.isArray(epicsData) ? epicsData : [], 
+    [epicsData]
+  );
+
+  const users = React.useMemo(() => 
+    Array.isArray(usersData) ? usersData : [], 
+    [usersData]
+  );
+
   // Process data for charts once loaded with enhanced cascading updates
   const developerPerformance = React.useMemo(() => {
-    if (isLoading) return [];
+    if (isLoading || !tasks.length || !users.length) return [];
+    
+    console.log("Processing developer performance with tasks:", tasks.length, "and users:", users.length);
     
     // Group tasks by assignee with enhanced tracking
     const assignedTasks = tasks.filter(task => task.assignee_id && task.completion_date);
@@ -131,7 +165,9 @@ const Reports = () => {
   }, [tasks, users, isLoading]);
 
   const epicProgress = React.useMemo(() => {
-    if (isLoading) return [];
+    if (isLoading || !tasks.length || !epics.length) return [];
+    
+    console.log("Processing epic progress with tasks:", tasks.length, "and epics:", epics.length);
     
     // Enhanced epic progress calculation to support cascading updates
     const epicData = epics.map(epic => {
@@ -154,7 +190,9 @@ const Reports = () => {
   }, [tasks, epics, isLoading]);
 
   const taskStatusData = React.useMemo(() => {
-    if (isLoading) return [];
+    if (isLoading || !tasks.length) return [];
+    
+    console.log("Processing task status with tasks:", tasks.length);
     
     // Count tasks by status with better tracking
     const todoCount = tasks.filter(task => 
@@ -176,7 +214,9 @@ const Reports = () => {
   }, [tasks, isLoading]);
 
   const timelineData = React.useMemo(() => {
-    if (isLoading) return [];
+    if (isLoading || !tasks.length || !epicProgress.length) return [];
+    
+    console.log("Processing timeline data with epicProgress:", epicProgress.length);
     
     // Enhanced timeline data calculation with better task tracking
     // Group tasks by epic and day of completion
@@ -282,26 +322,32 @@ const Reports = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={taskStatusData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {taskStatusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {taskStatusData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={taskStatusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {taskStatusData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-muted-foreground">No task data available</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -312,20 +358,26 @@ const Reports = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={epicProgress}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="completed" stackId="a" fill="#10B981" name="Completed" />
-                        <Bar dataKey="remaining" stackId="a" fill="#8E9196" name="Remaining" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {epicProgress.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={epicProgress}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="completed" stackId="a" fill="#10B981" name="Completed" />
+                          <Bar dataKey="remaining" stackId="a" fill="#8E9196" name="Remaining" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-muted-foreground">No epic data available</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -339,21 +391,27 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={developerPerformance}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="estimatedDays" fill="#9b87f5" name="Estimated Days" />
-                      <Bar dataKey="actualDays" fill="#1EAEDB" name="Actual Days" />
-                      <Bar dataKey="tasks" fill="#D6BCFA" name="Tasks Completed" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {developerPerformance.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={developerPerformance}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="estimatedDays" fill="#9b87f5" name="Estimated Days" />
+                        <Bar dataKey="actualDays" fill="#1EAEDB" name="Actual Days" />
+                        <Bar dataKey="tasks" fill="#D6BCFA" name="Tasks Completed" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground">No developer performance data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -366,21 +424,27 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={epicProgress}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="completed" fill="#10B981" name="Completed Tasks" />
-                      <Bar dataKey="remaining" fill="#8E9196" name="Remaining Tasks" />
-                      <Bar dataKey="total" fill="#9b87f5" name="Total Tasks" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {epicProgress.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={epicProgress}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="completed" fill="#10B981" name="Completed Tasks" />
+                        <Bar dataKey="remaining" fill="#8E9196" name="Remaining Tasks" />
+                        <Bar dataKey="total" fill="#9b87f5" name="Total Tasks" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground">No epic progress data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -393,27 +457,33 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={timelineData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      {timelineData[0]?.epic1Name && (
-                        <Line type="monotone" dataKey="epic1" stroke="#9b87f5" name={timelineData[0].epic1Name} />
-                      )}
-                      {timelineData[0]?.epic2Name && (
-                        <Line type="monotone" dataKey="epic2" stroke="#1EAEDB" name={timelineData[0].epic2Name} />
-                      )}
-                      {timelineData[0]?.epic3Name && (
-                        <Line type="monotone" dataKey="epic3" stroke="#D6BCFA" name={timelineData[0].epic3Name} />
-                      )}
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {timelineData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={timelineData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        {timelineData[0]?.epic1Name && (
+                          <Line type="monotone" dataKey="epic1" stroke="#9b87f5" name={timelineData[0].epic1Name as string} />
+                        )}
+                        {timelineData[0]?.epic2Name && (
+                          <Line type="monotone" dataKey="epic2" stroke="#1EAEDB" name={timelineData[0].epic2Name as string} />
+                        )}
+                        {timelineData[0]?.epic3Name && (
+                          <Line type="monotone" dataKey="epic3" stroke="#D6BCFA" name={timelineData[0].epic3Name as string} />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground">No timeline data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
