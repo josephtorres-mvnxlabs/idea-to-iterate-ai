@@ -39,7 +39,7 @@ const mapDatabaseTaskToUITask = (dbTask: DBTask): UITask => {
     id: dbTask.id,
     title: dbTask.title,
     description: dbTask.description,
-    status: mapStatus(dbTask.status),
+    status: mapStatus(dbTask.status), // Fixed: Use dbTask.status instead of undefined dbStatus
     estimation: dbTask.estimation,
     // Safely handle assignee data
     assignee: {
@@ -63,11 +63,18 @@ export function KanbanBoard({ selectedEpic, viewMode = "kanban" }: KanbanBoardPr
     queryFn: () => taskApi.getAll(), // Removed the argument as the function doesn't expect one
   });
 
-  // Map database tasks to UI tasks
-  const tasks = React.useMemo(() => 
-    dbTasks.map(mapDatabaseTaskToUITask), 
-    [dbTasks]
-  );
+  // Map database tasks to UI tasks and filter by selected epic if needed
+  const tasks = React.useMemo(() => {
+    // First map the database tasks to UI format
+    const mappedTasks = dbTasks.map(mapDatabaseTaskToUITask);
+    
+    // Then filter by selectedEpic if one is specified
+    if (selectedEpic) {
+      return mappedTasks.filter(task => task.epic === selectedEpic);
+    }
+    
+    return mappedTasks;
+  }, [dbTasks, selectedEpic]);
 
   const todoTasks = tasks.filter(task => task.status === "todo");
   const inProgressTasks = tasks.filter(task => task.status === "inProgress");
