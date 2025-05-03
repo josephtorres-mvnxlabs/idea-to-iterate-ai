@@ -45,6 +45,7 @@ export function LinkedEpicsSection({
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { toast } = useToast();
   
+  // Fixed the type to match what EpicSubmissionForm expects
   const handleEpicCreationSuccess = (epicData: { id: string, title: string }) => {
     setIsDialogOpen(false);
     
