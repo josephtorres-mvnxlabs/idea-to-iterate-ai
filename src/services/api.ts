@@ -4,8 +4,8 @@ import { MOCK_TASKS, MOCK_EPICS, MOCK_USERS } from './mockData';
 // Flag to toggle between real API and mock data
 const USE_MOCK_DATA = true;
 
-// Base API URL - In a real app, this would come from environment variables
-const API_BASE_URL = '/api';
+// Base API URL - This should be updated to point to your FastAPI backend
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // Generic fetch wrapper with error handling
 async function fetchAPI<T>(
@@ -29,12 +29,14 @@ async function fetchAPI<T>(
       method,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
     });
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
     }
     
     return await response.json();
@@ -166,7 +168,23 @@ export const epicApi = {
     
     const completedTasks = tasks.filter(task => task.status === 'done').length;
     return Math.round((completedTasks / tasks.length) * 100);
-  }
+  },
+  
+  // Database methods for real API connections
+  getFromDatabase: () => fetchAPI<Epic[]>(`/epics`),
+  
+  getByIdFromDatabase: (id: string) => fetchAPI<Epic>(`/epics/${id}`),
+  
+  createInDatabase: (epic: Omit<Epic, 'id' | 'created_at' | 'updated_at' | 'status'>) => 
+    fetchAPI<Epic>(`/epics`, 'POST', {
+      ...epic,
+      status: 'planning'
+    }),
+  
+  updateInDatabase: (id: string, epic: Partial<Omit<Epic, 'id' | 'created_at' | 'created_by'>>) => 
+    fetchAPI<Epic>(`/epics/${id}`, 'PUT', epic),
+  
+  deleteFromDatabase: (id: string) => fetchAPI<void>(`/epics/${id}`, 'DELETE'),
 };
 
 // Task related API calls
@@ -200,7 +218,28 @@ export const taskApi = {
   delete: (id: string) => fetchAPI<void>(`/${TABLES.TASKS}/${id}`, 'DELETE'),
   
   updateStatus: (id: string, status: Task['status']) => 
-    fetchAPI<Task>(`/${TABLES.TASKS}/${id}/status`, 'PUT', { status })
+    fetchAPI<Task>(`/${TABLES.TASKS}/${id}/status`, 'PUT', { status }),
+  
+  // Database methods for real API connections
+  getFromDatabase: () => fetchAPI<Task[]>(`/tasks`),
+  
+  getByEpicFromDatabase: (epicId: string) => fetchAPI<Task[]>(`/tasks/epic/${epicId}`),
+  
+  getByIdFromDatabase: (id: string) => fetchAPI<Task>(`/tasks/${id}`),
+  
+  createInDatabase: (task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'status'>) => 
+    fetchAPI<Task>(`/tasks`, 'POST', {
+      ...task,
+      status: task.is_product_idea ? 'backlog' : 'ready'
+    }),
+  
+  updateInDatabase: (id: string, task: Partial<Omit<Task, 'id' | 'created_at' | 'created_by'>>) => 
+    fetchAPI<Task>(`/tasks/${id}`, 'PUT', task),
+  
+  deleteFromDatabase: (id: string) => fetchAPI<void>(`/tasks/${id}`, 'DELETE'),
+  
+  updateStatusInDatabase: (id: string, status: Task['status']) => 
+    fetchAPI<Task>(`/tasks/${id}/status`, 'PUT', { status })
 };
 
 // User related API calls
@@ -212,7 +251,15 @@ export const userApi = {
   getWithTasks: (id: string) => fetchAPI<User & { assigned_tasks: Task[] }>(`/${TABLES.USERS}/${id}/tasks`),
   
   update: (id: string, user: Partial<Omit<User, 'id' | 'created_at'>>) => 
-    fetchAPI<User>(`/${TABLES.USERS}/${id}`, 'PUT', user)
+    fetchAPI<User>(`/${TABLES.USERS}/${id}`, 'PUT', user),
+  
+  // Database methods for real API connections
+  getFromDatabase: () => fetchAPI<User[]>(`/users`),
+  
+  getByIdFromDatabase: (id: string) => fetchAPI<User>(`/users/${id}`),
+  
+  updateInDatabase: (id: string, user: Partial<Omit<User, 'id' | 'created_at'>>) => 
+    fetchAPI<User>(`/users/${id}`, 'PUT', user)
 };
 
 // Product Idea related API calls
@@ -264,7 +311,31 @@ export const productIdeaApi = {
     });
     
     return totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-  }
+  },
+  
+  // Database methods for real API connections
+  getFromDatabase: () => fetchAPI<ProductIdea[]>(`/product-ideas`),
+  
+  getByIdFromDatabase: (id: string) => fetchAPI<ProductIdea>(`/product-ideas/${id}`),
+  
+  createInDatabase: (idea: Omit<ProductIdea, 'id' | 'created_at' | 'updated_at' | 'status'>) => 
+    fetchAPI<ProductIdea>(`/product-ideas`, 'POST', {
+      ...idea,
+      status: 'proposed'
+    }),
+  
+  updateInDatabase: (id: string, idea: Partial<Omit<ProductIdea, 'id' | 'created_at' | 'created_by'>>) => 
+    fetchAPI<ProductIdea>(`/product-ideas/${id}`, 'PUT', idea),
+  
+  deleteFromDatabase: (id: string) => fetchAPI<void>(`/product-ideas/${id}`, 'DELETE'),
+  
+  getLinkedEpicsFromDatabase: (id: string) => fetchAPI<Epic[]>(`/product-ideas/${id}/epics`),
+  
+  linkToEpicInDatabase: (ideaId: string, epicId: string) => 
+    fetchAPI<void>(`/product-ideas/${ideaId}/epics/${epicId}`, 'POST'),
+    
+  unlinkFromEpicInDatabase: (ideaId: string, epicId: string) => 
+    fetchAPI<void>(`/product-ideas/${ideaId}/epics/${epicId}`, 'DELETE'),
 };
 
 export default {
