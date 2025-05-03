@@ -7,6 +7,7 @@ import { ProductIdeaHeader } from "./productIdea/ProductIdeaHeader";
 import { ProgressSection } from "./productIdea/ProgressSection";
 import { LinkedEpicsSection } from "./productIdea/LinkedEpicsSection";
 import { ProductIdeaFooter } from "./productIdea/ProductIdeaFooter";
+import { useToast } from "@/hooks/use-toast";
 
 interface EpicWithTasks {
   id: string;
@@ -70,12 +71,25 @@ const mockEpicsWithTasks: Record<string, EpicWithTasks> = {
     progress: 90,
     completedTasks: 4,
     totalTasks: 5
+  },
+  "New Epic": {
+    id: "epic3",
+    title: "New Epic",
+    description: "A newly created epic from the product idea detail",
+    tasks: [
+      { id: "task11", title: "Initial planning", status: "backlog", priority: "high" },
+      { id: "task12", title: "Technical design", status: "backlog", priority: "high" }
+    ],
+    progress: 0,
+    completedTasks: 0,
+    totalTasks: 2
   }
 };
 
 export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetailProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [currentIdea, setCurrentIdea] = React.useState(idea);
+  const { toast } = useToast();
   
   // Get epics data that match the linkedEpics array in the idea
   const linkedEpicsData = React.useMemo(() => {
@@ -99,6 +113,38 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
     if (onUpdate) {
       onUpdate(updatedIdea);
     }
+  };
+  
+  const handleNewEpicCreated = (epicTitle: string) => {
+    // Check if the epic already exists in the idea
+    if (currentIdea.linkedEpics.includes(epicTitle)) {
+      toast({
+        title: "Epic already linked",
+        description: `Epic "${epicTitle}" is already linked to this product idea.`,
+      });
+      return;
+    }
+    
+    // Create updated idea with the new epic linked
+    const updatedIdea = {
+      ...currentIdea,
+      linkedEpics: [...currentIdea.linkedEpics, epicTitle],
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update local state
+    setCurrentIdea(updatedIdea);
+    
+    // In a real app, this would update the database as well
+    if (onUpdate) {
+      onUpdate(updatedIdea);
+    }
+    
+    // Show success message
+    toast({
+      title: "Epic created and linked",
+      description: `Epic "${epicTitle}" has been created and linked to this product idea.`,
+    });
   };
   
   return (
@@ -126,7 +172,10 @@ export function ProductIdeaDetail({ idea, onClose, onUpdate }: ProductIdeaDetail
                 />
                 
                 {/* Linked Epics */}
-                <LinkedEpicsSection linkedEpicsData={linkedEpicsData} />
+                <LinkedEpicsSection 
+                  linkedEpicsData={linkedEpicsData} 
+                  onNewEpicCreated={handleNewEpicCreated}
+                />
               </div>
             </CardContent>
             
