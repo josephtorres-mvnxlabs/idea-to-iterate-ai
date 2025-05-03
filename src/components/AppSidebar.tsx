@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { 
   Sidebar, 
@@ -95,7 +94,7 @@ export function AppSidebar() {
                 >
                   <Link to="/epics-and-tasks">
                     <Book className="w-4 h-4 mr-2" />
-                    <span>Epics & Tasks</span>
+                    <span>Developer CoPilot</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -168,4 +167,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
