@@ -80,12 +80,12 @@ export function EditProductIdeaForm({
   onCancel,
   availableEpics = ["ML-Driven Recommendations", "Performance Optimization Initiative", "Mobile App Strategy", "User Engagement Analytics", "Cloud Migration Project"],
   availableUsers = [
-    { id: "user-1", name: "Alex Johnson", email: "alex.j@company.com", role: "admin", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=1" },
-    { id: "user-2", name: "Maria Garcia", email: "maria.g@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=2" },
-    { id: "user-3", name: "Tyler Smith", email: "tyler.s@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=3" },
-    { id: "user-4", name: "Sam Wong", email: "sam.w@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=4" },
-    { id: "user-5", name: "Jamie Lee", email: "jamie.l@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=5" },
-    { id: "user-6", name: "Robin Chen", email: "robin.c@company.com", role: "member", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=6" }
+    { id: "user-1", name: "Alex Johnson", email: "alex.j@company.com", role: "admin", user_type: "developer", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=1" },
+    { id: "user-2", name: "Maria Garcia", email: "maria.g@company.com", role: "member", user_type: "product", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=2" },
+    { id: "user-3", name: "Tyler Smith", email: "tyler.s@company.com", role: "member", user_type: "scrum", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=3" },
+    { id: "user-4", name: "Sam Wong", email: "sam.w@company.com", role: "member", user_type: "developer", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=4" },
+    { id: "user-5", name: "Jamie Lee", email: "jamie.l@company.com", role: "member", user_type: "product", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=5" },
+    { id: "user-6", name: "Robin Chen", email: "robin.c@company.com", role: "member", user_type: "developer", created_at: "", avatar_url: "https://i.pravatar.cc/150?img=6" }
   ]
 }: EditProductIdeaFormProps) {
   const [linkedEpics, setLinkedEpics] = React.useState<string[]>(idea.linkedEpics || []);

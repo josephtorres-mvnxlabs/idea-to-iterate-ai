@@ -1,3 +1,4 @@
+
 import { Epic, Task, User, ProductIdea } from "@/models/database";
 
 // Sample users data for assignee dropdown
@@ -8,6 +9,7 @@ export const MOCK_USERS: User[] = [
     email: "alex@example.com",
     avatar_url: "https://i.pravatar.cc/150?img=1",
     role: "admin",
+    user_type: "developer", // Added user type
     created_at: "2024-01-01T00:00:00Z",
   },
   {
@@ -16,6 +18,7 @@ export const MOCK_USERS: User[] = [
     email: "jamie@example.com",
     avatar_url: "https://i.pravatar.cc/150?img=2",
     role: "member",
+    user_type: "product", // Added user type
     created_at: "2024-01-02T00:00:00Z",
   },
   {
@@ -24,6 +27,7 @@ export const MOCK_USERS: User[] = [
     email: "morgan@example.com",
     avatar_url: "https://i.pravatar.cc/150?img=3",
     role: "member",
+    user_type: "scrum", // Added user type
     created_at: "2024-01-03T00:00:00Z",
   },
 ];

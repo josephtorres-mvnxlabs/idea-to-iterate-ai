@@ -1,3 +1,4 @@
+
 // This file defines our database schema and models
 
 export interface User {
@@ -30,6 +31,7 @@ export interface Task {
   description: string;
   epic_id?: string; // Optional as some tasks might not be part of an epic
   assignee_id?: string; // Optional as tasks can be unassigned
+  assignee_type?: 'developer' | 'product' | 'scrum' | 'other'; // Add assignee type to Task
   owner_id: string; // user_id of the task owner
   team_members: string[]; // array of user_ids that are part of this task's team
   estimation: number; // in days
