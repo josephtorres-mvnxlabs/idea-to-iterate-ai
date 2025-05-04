@@ -1,3 +1,4 @@
+
 import { Epic, Task, ProductIdea, User } from '../models/database';
 
 // Map EpicSubmissionForm data to Epic database model
@@ -28,20 +29,19 @@ export function mapTaskFormToDatabase(
     assignee_type?: "developer" | "product" | "scrum" | "other";
     estimation: number;
     priority: "low" | "medium" | "high";
-    status?: string;
+    status?: Task['status'];
     assigned_date?: string;
     completion_date?: string;
   }, 
   userId: string,
   isProductIdea: boolean = false
 ): Omit<Task, 'id' | 'created_at' | 'updated_at'> {
-  // In a real app, you'd have proper validation and error handling
   return {
     title: formData.title,
     description: formData.description,
     epic_id: formData.epic,
     assignee_id: formData.assignee || undefined,
-    assignee_type: formData.assignee_type || "developer", // Include assignee type
+    assignee_type: formData.assignee_type, // This is now properly typed in the Task model
     estimation: formData.estimation,
     priority: formData.priority,
     status: formData.status as Task['status'] || (isProductIdea ? 'backlog' : 'ready'),
@@ -49,8 +49,8 @@ export function mapTaskFormToDatabase(
     completion_date: formData.completion_date,
     is_product_idea: isProductIdea,
     created_by: userId,
-    owner_id: userId,  // Set the owner to the current user
-    team_members: [], // Initialize with empty array
+    owner_id: userId,
+    team_members: [],
   };
 }
 
@@ -105,7 +105,7 @@ export function mapDatabaseToTaskForm(task: Task): {
     description: task.description,
     epic: task.epic_id,
     assignee: task.assignee_id,
-    assignee_type: task.assignee_type || "developer", // Include assignee type
+    assignee_type: task.assignee_type,
     estimation: task.estimation,
     priority: task.priority,
     status: task.status,
