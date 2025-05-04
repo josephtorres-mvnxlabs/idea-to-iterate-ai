@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -9,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TaskSubmissionForm } from "@/components/TaskSubmissionForm";
-import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
+import { EpicSubmissionWithIdeaLinking } from "@/components/EpicSubmissionWithIdeaLinking";
 import { MOCK_EPICS, MOCK_PRODUCT_IDEAS } from "@/services/mockData";
 import { productIdeaApi, epicApi } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
@@ -248,9 +247,10 @@ const EpicsAndTasks = () => {
       {/* Epic Submission Dialog */}
       <Dialog open={isEpicDialogOpen} onOpenChange={setIsEpicDialogOpen}>
         <DialogContent className="sm:max-w-[650px]">
-          <EpicSubmissionForm 
+          <EpicSubmissionWithIdeaLinking
             onSuccess={() => setIsEpicDialogOpen(false)} 
             onCancel={() => setIsEpicDialogOpen(false)} 
+            productIdeaId={selectedIdea}
           />
         </DialogContent>
       </Dialog>
@@ -258,7 +258,7 @@ const EpicsAndTasks = () => {
       {/* Epic Edit Dialog */}
       <Dialog open={isEditEpicDialogOpen} onOpenChange={setIsEditEpicDialogOpen}>
         <DialogContent className="sm:max-w-[650px]">
-          <EpicSubmissionForm 
+          <EpicSubmissionWithIdeaLinking
             onSuccess={handleSaveEpic} 
             onCancel={() => setIsEditEpicDialogOpen(false)} 
             initialValues={selectedEpicToEdit ? {

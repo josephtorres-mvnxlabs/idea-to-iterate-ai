@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EpicAccordionItem } from "./EpicAccordionItem";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { EpicSubmissionForm } from "@/components/EpicSubmissionForm";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { productIdeaApi } from "@/services/api";
+import { EpicSubmissionWithIdeaLinking } from "@/components/EpicSubmissionWithIdeaLinking";
 
 interface EpicWithTasks {
   id: string;
@@ -48,43 +48,15 @@ export function LinkedEpicsSection({
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { toast } = useToast();
   
-  // Create a dummy reference to capture any data passed by EpicSubmissionForm's onSuccess
-  const epicDataRef = React.useRef<{ id: string, title: string } | null>(null);
-  
-  // The onSuccess function without parameters to satisfy EpicSubmissionForm's type
-  const handleEpicCreationSuccess = React.useCallback(() => {
+  const handleEpicCreationSuccess = () => {
     setIsDialogOpen(false);
     
-    // Use the data stored in the ref if available
-    const epicData = epicDataRef.current;
-    
-    // Link the new epic to this product idea if we have an idea ID and epic data
-    if (ideaId && epicData && epicData.id) {
-      try {
-        productIdeaApi.linkToEpic(ideaId, epicData.id)
-          .then(() => {
-            toast({
-              title: "Epic linked",
-              description: `Epic "${epicData.title}" has been linked to this product idea.`,
-            });
-            
-            if (onEpicLinked) {
-              onEpicLinked(epicData.id);
-            }
-          });
-      } catch (error) {
-        console.error("Error linking epic:", error);
-      }
-    }
-    
-    // Call the provided callback
-    if (onNewEpicCreated && epicData) {
-      onNewEpicCreated(epicData.title);
-    }
-    
-    // Clear the ref after use
-    epicDataRef.current = null;
-  }, [ideaId, onEpicLinked, onNewEpicCreated, toast]);
+    // The linking is now handled by the EpicSubmissionWithIdeaLinking component
+    toast({
+      title: "Epic created",
+      description: "New epic has been created and linked to this product idea.",
+    });
+  };
   
   const handleUnlinkEpic = async (epicId: string, epicTitle: string) => {
     if (!ideaId) return;
@@ -145,7 +117,7 @@ export function LinkedEpicsSection({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogTitle>Create New Epic</DialogTitle>
-          <EpicSubmissionForm
+          <EpicSubmissionWithIdeaLinking
             onSuccess={handleEpicCreationSuccess}
             onCancel={() => setIsDialogOpen(false)}
             productIdeaId={ideaId}
