@@ -1,4 +1,3 @@
-
 // This file defines our database schema and models
 
 export interface User {
@@ -7,6 +6,7 @@ export interface User {
   email: string;
   avatar_url?: string;
   role: 'admin' | 'member' | 'viewer';
+  user_type: 'developer' | 'product' | 'scrum' | 'other'; // Added user type field
   created_at: string;
 }
 

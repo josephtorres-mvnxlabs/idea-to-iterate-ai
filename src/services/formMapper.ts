@@ -1,5 +1,4 @@
-
-import { Epic, Task, ProductIdea } from '../models/database';
+import { Epic, Task, ProductIdea, User } from '../models/database';
 
 // Map EpicSubmissionForm data to Epic database model
 export function mapEpicFormToDatabase(formData: {
@@ -26,6 +25,7 @@ export function mapTaskFormToDatabase(
     description: string;
     epic?: string;
     assignee?: string;
+    assignee_type?: "developer" | "product" | "scrum" | "other";
     estimation: number;
     priority: "low" | "medium" | "high";
     status?: string;
@@ -41,6 +41,7 @@ export function mapTaskFormToDatabase(
     description: formData.description,
     epic_id: formData.epic,
     assignee_id: formData.assignee || undefined,
+    assignee_type: formData.assignee_type || "developer", // Include assignee type
     estimation: formData.estimation,
     priority: formData.priority,
     status: formData.status as Task['status'] || (isProductIdea ? 'backlog' : 'ready'),
@@ -92,6 +93,7 @@ export function mapDatabaseToTaskForm(task: Task): {
   description: string;
   epic?: string;
   assignee?: string;
+  assignee_type?: "developer" | "product" | "scrum" | "other";
   estimation: number;
   priority: 'low' | 'medium' | 'high';
   status?: string;
@@ -103,6 +105,7 @@ export function mapDatabaseToTaskForm(task: Task): {
     description: task.description,
     epic: task.epic_id,
     assignee: task.assignee_id,
+    assignee_type: task.assignee_type || "developer", // Include assignee type
     estimation: task.estimation,
     priority: task.priority,
     status: task.status,

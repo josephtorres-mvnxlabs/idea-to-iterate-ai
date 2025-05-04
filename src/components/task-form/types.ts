@@ -6,6 +6,7 @@ export const taskFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   epic: z.string().optional(),
   assignee: z.string().optional(),
+  assignee_type: z.enum(["developer", "product", "scrum", "other"]).optional(),
   estimation: z.coerce.number().min(0).default(1),
   priority: z.enum(["low", "medium", "high"]),
   status: z.enum(["proposed", "under_review", "approved", "rejected", "implemented", "backlog", "ready", "in_progress", "review", "done"]).optional(),
@@ -21,4 +22,5 @@ export const defaultFormValues: Partial<TaskFormValues> = {
   status: "backlog",
   assigned_date: null,
   completion_date: null,
+  assignee_type: "developer", // Set default assignee type
 };

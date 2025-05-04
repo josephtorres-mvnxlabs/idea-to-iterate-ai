@@ -1,6 +1,5 @@
-
 import { API_BASE_URL, API_TIMEOUT, ENABLE_API_LOGGING } from '../config/apiConfig';
-import { ProductIdea, Task } from '@/models/database';
+import { ProductIdea, Task, User } from '@/models/database';
 
 interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -19,6 +18,12 @@ interface ApiResponse<T> {
 export interface StatusUpdatePayload<T> {
   id: string;
   status: T;
+}
+
+// Add user type update payload
+export interface UserTypeUpdatePayload {
+  id: string;
+  user_type: User['user_type'];
 }
 
 export type TaskStatusUpdatePayload = StatusUpdatePayload<Task['status']>;
@@ -133,9 +138,15 @@ export const put = <T>(endpoint: string, body: any, headers?: Record<string, str
   fetchFromApi<T>(endpoint, { method: 'PUT', body, headers });
 
 /**
+ * PATCH request helper
+ */
+export const patch = <T>(endpoint: string, body: any, headers?: Record<string, string>) => 
+  fetchFromApi<T>(endpoint, { method: 'PATCH', body, headers });
+
+/**
  * DELETE request helper
  */
 export const del = <T>(endpoint: string, headers?: Record<string, string>) => 
   fetchFromApi<T>(endpoint, { method: 'DELETE', headers });
 
-export default { get, post, put, delete: del };
+export default { get, post, put, patch, delete: del };
