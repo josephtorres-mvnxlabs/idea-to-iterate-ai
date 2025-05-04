@@ -50,13 +50,17 @@ export function TaskSubmissionForm({
 
   // Create form values combining defaults, passed values, and preselected epic
   const formDefaultValues = React.useMemo(() => {
+    // Set appropriate default status based on whether it's a product idea
+    const defaultStatus = isProductIdea ? "proposed" : "backlog";
+    
     return {
       ...defaultFormValues,
+      status: defaultStatus,
       ...(taskValues || {}),
       // When editing, prioritize the epic from taskValues, otherwise use the provided epicId
       epic: (taskValues?.epic || epicId)
     };
-  }, [epicId, taskValues]);
+  }, [epicId, taskValues, isProductIdea]);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -77,12 +81,13 @@ export function TaskSubmissionForm({
       const userId = "current-user-id"; 
       
       // Convert form data to database model - ensure all required fields are present
-      // Ensure we're using the passed epic either from form data or epicId prop
+      // Pass the form status as a string and let the mapper handle the type conversion
       const taskData = mapTaskFormToDatabase({
         title: data.title,
         description: data.description,
         epic: data.epic || epicId, // Prioritize form data but fall back to epicId
         assignee: data.assignee,
+        assignee_type: data.assignee_type,
         estimation: data.estimation,
         priority: data.priority,
         status: data.status,

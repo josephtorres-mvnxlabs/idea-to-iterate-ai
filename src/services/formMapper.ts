@@ -29,13 +29,30 @@ export function mapTaskFormToDatabase(
     assignee_type?: "developer" | "product" | "scrum" | "other";
     estimation: number;
     priority: "low" | "medium" | "high";
-    status?: Task['status'];
+    status?: string; // Accept any status string, will be validated inside
     assigned_date?: string;
     completion_date?: string;
   }, 
   userId: string,
   isProductIdea: boolean = false
 ): Omit<Task, 'id' | 'created_at' | 'updated_at'> {
+  // Determine the appropriate status based on whether it's a product idea or regular task
+  let status: Task['status'];
+  
+  if (isProductIdea) {
+    // For product ideas, convert product idea status to appropriate task status
+    // Default to 'backlog' if status is missing or not valid for tasks
+    status = 'backlog';
+  } else {
+    // For regular tasks, ensure the status is valid for tasks
+    // Cast status to Task['status'] if it's a valid task status, otherwise default to 'ready'
+    if (formData.status && ['backlog', 'ready', 'in_progress', 'review', 'done'].includes(formData.status)) {
+      status = formData.status as Task['status'];
+    } else {
+      status = 'ready';
+    }
+  }
+
   return {
     title: formData.title,
     description: formData.description,
@@ -44,7 +61,7 @@ export function mapTaskFormToDatabase(
     assignee_type: formData.assignee_type, // This is now properly typed in the Task model
     estimation: formData.estimation,
     priority: formData.priority,
-    status: formData.status as Task['status'] || (isProductIdea ? 'backlog' : 'ready'),
+    status: status,
     assigned_date: formData.assigned_date,
     completion_date: formData.completion_date,
     is_product_idea: isProductIdea,
