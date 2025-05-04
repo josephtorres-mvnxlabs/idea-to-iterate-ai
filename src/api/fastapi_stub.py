@@ -1,4 +1,3 @@
-
 """
 FastAPI Backend Stub for DevFlow Application
 
@@ -45,6 +44,7 @@ class EpicStatus(str, enum.Enum):
     planning = "planning"
     in_progress = "in_progress"
     completed = "completed"
+    archived = "archived"
 
 class TaskStatus(str, enum.Enum):
     backlog = "backlog"
@@ -52,6 +52,7 @@ class TaskStatus(str, enum.Enum):
     in_progress = "in_progress"
     review = "review"
     done = "done"
+    archived = "archived"
 
 class ProductIdeaStatus(str, enum.Enum):
     proposed = "proposed"
@@ -59,6 +60,7 @@ class ProductIdeaStatus(str, enum.Enum):
     approved = "approved"
     rejected = "rejected"
     implemented = "implemented"
+    archived = "archived"
 
 class Priority(str, enum.Enum):
     low = "low"

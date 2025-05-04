@@ -42,8 +42,10 @@ export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
     return format(new Date(dateString), "MMM d, yyyy");
   };
 
-  // Sort the tasks by status priority: in_progress > backlog/ready > done
+  // Filter out archived tasks and sort the remaining tasks by status priority
   const sortedTasks = React.useMemo(() => {
+    const filteredTasks = tasks.filter(task => task.status !== 'archived');
+    
     const getStatusPriority = (status: string): number => {
       if (status === 'in_progress') return 1;
       if (status === 'backlog' || status === 'ready') return 2;
@@ -52,7 +54,7 @@ export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
       return 5; // Default for any other status
     };
 
-    return [...tasks].sort((a, b) => {
+    return [...filteredTasks].sort((a, b) => {
       return getStatusPriority(a.status) - getStatusPriority(b.status);
     });
   }, [tasks]);

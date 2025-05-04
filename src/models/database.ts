@@ -17,7 +17,7 @@ export interface Epic {
   description: string;
   estimation: number; // in days
   capability_category: 'frontend' | 'backend' | 'infrastructure' | 'data' | 'security' | 'other';
-  status: 'planning' | 'in_progress' | 'completed';
+  status: 'planning' | 'in_progress' | 'completed' | 'archived';
   created_by: string; // user_id
   owner_id: string; // user_id of the owner
   team_members: string[]; // array of user_ids that are part of this epic's team
@@ -36,7 +36,7 @@ export interface Task {
   team_members: string[]; // array of user_ids that are part of this task's team
   estimation: number; // in days
   priority: 'low' | 'medium' | 'high';
-  status: 'backlog' | 'ready' | 'in_progress' | 'review' | 'done';
+  status: 'backlog' | 'ready' | 'in_progress' | 'review' | 'done' | 'archived';
   is_product_idea: boolean; // To differentiate between regular tasks and product ideas
   assigned_date?: string; // Date when the task was assigned
   completion_date?: string; // Date when the task was completed
@@ -52,7 +52,7 @@ export interface ProductIdea {
   description: string;
   estimation: number; // estimated size in days
   priority: 'low' | 'medium' | 'high';
-  status: 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented';
+  status: 'proposed' | 'under_review' | 'approved' | 'rejected' | 'implemented' | 'archived';
   owner_id: string; // user_id of the owner
   team_members: string[]; // array of user_ids that are part of this product idea's team
   created_by: string; // user_id

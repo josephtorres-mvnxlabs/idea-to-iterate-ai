@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,6 +67,7 @@ interface TimelineDataPoint {
 
 const Reports = () => {
   const [timeframe, setTimeframe] = React.useState("lastMonth");
+  const [includeArchived, setIncludeArchived] = React.useState(true);
 
   // Fetch all necessary data with proper error handling
   const { data: tasksData = [], isLoading: isLoadingTasks } = useQuery({
@@ -125,7 +125,14 @@ const Reports = () => {
     console.log("Processing developer performance with tasks:", tasks.length, "and users:", users.length);
     
     // Group tasks by assignee with enhanced tracking
-    const assignedTasks = tasks.filter(task => task.assignee_id && task.completion_date);
+    // Include archived tasks only when the includeArchived flag is true
+    const assignedTasks = tasks.filter(task => 
+      task.assignee_id && 
+      task.completion_date && 
+      (includeArchived || task.status !== 'archived')
+    );
+    
+    // Group tasks by assignee with enhanced tracking
     const tasksByDeveloper = new Map();
     
     assignedTasks.forEach(task => {
@@ -162,7 +169,7 @@ const Reports = () => {
         developerId // Add developer ID for reference
       };
     }).sort((a, b) => b.tasks - a.tasks).slice(0, 5); // Take top 5 by task count
-  }, [tasks, users, isLoading]);
+  }, [tasks, users, isLoading, includeArchived]);
 
   const epicProgress = React.useMemo(() => {
     if (isLoading || !tasks.length || !epics.length) return [];
@@ -170,48 +177,75 @@ const Reports = () => {
     console.log("Processing epic progress with tasks:", tasks.length, "and epics:", epics.length);
     
     // Enhanced epic progress calculation to support cascading updates
-    const epicData = epics.map(epic => {
-      const epicTasks = tasks.filter(task => task.epic_id === epic.id);
-      const completedTasks = epicTasks.filter(task => task.status === 'done');
-      const completionPercentage = epicTasks.length ? Math.round((completedTasks.length / epicTasks.length) * 100) : 0;
-      
-      return {
-        id: epic.id, // Add epic ID for reference and tracking
-        name: epic.title,
-        completed: completedTasks.length,
-        remaining: epicTasks.length - completedTasks.length,
-        total: epicTasks.length,
-        completionPercentage // For direct percentage use
-      };
-    }).filter(epic => epic.total > 0) // Only include epics with tasks
+    const epicData = epics
+      .filter(epic => includeArchived || epic.status !== 'archived')
+      .map(epic => {
+        const epicTasks = tasks.filter(task => 
+          task.epic_id === epic.id && 
+          (includeArchived || task.status !== 'archived')
+        );
+        const completedTasks = epicTasks.filter(task => 
+          task.status === 'done' || (includeArchived && task.status === 'archived')
+        );
+        const completionPercentage = epicTasks.length ? Math.round((completedTasks.length / epicTasks.length) * 100) : 0;
+        
+        return {
+          id: epic.id, // Add epic ID for reference and tracking
+          name: epic.title,
+          completed: completedTasks.length,
+          remaining: epicTasks.length - completedTasks.length,
+          total: epicTasks.length,
+          completionPercentage // For direct percentage use
+        };
+      }).filter(epic => epic.total > 0) // Only include epics with tasks
       .sort((a, b) => b.total - a.total); // Sort by total tasks
       
     return epicData.slice(0, 3); // Take top 3 epics
-  }, [tasks, epics, isLoading]);
+  }, [tasks, epics, isLoading, includeArchived]);
 
   const taskStatusData = React.useMemo(() => {
     if (isLoading || !tasks.length) return [];
     
     console.log("Processing task status with tasks:", tasks.length);
     
+    // Filter tasks based on archived status
+    const filteredTasks = includeArchived 
+      ? tasks 
+      : tasks.filter(task => task.status !== 'archived');
+    
     // Count tasks by status with better tracking
-    const todoCount = tasks.filter(task => 
+    const todoCount = filteredTasks.filter(task => 
       task.status === 'backlog' || task.status === 'ready').length;
     
-    const inProgressCount = tasks.filter(task => 
+    const inProgressCount = filteredTasks.filter(task => 
       task.status === 'in_progress' || task.status === 'review').length;
     
-    const doneCount = tasks.filter(task => 
+    const doneCount = filteredTasks.filter(task => 
       task.status === 'done').length;
+      
+    const archivedCount = includeArchived ? filteredTasks.filter(task => 
+      task.status === 'archived').length : 0;
     
-    const totalCount = tasks.length;
+    const totalCount = filteredTasks.length;
     
-    return [
+    const statusData = [
       { name: 'To Do', value: todoCount, color: '#8E9196', percentage: Math.round((todoCount / totalCount) * 100) },
       { name: 'In Progress', value: inProgressCount, color: '#F59E0B', percentage: Math.round((inProgressCount / totalCount) * 100) },
       { name: 'Done', value: doneCount, color: '#10B981', percentage: Math.round((doneCount / totalCount) * 100) },
     ];
-  }, [tasks, isLoading]);
+    
+    // Add archived status if included
+    if (includeArchived && archivedCount > 0) {
+      statusData.push({ 
+        name: 'Archived', 
+        value: archivedCount, 
+        color: '#71717A', 
+        percentage: Math.round((archivedCount / totalCount) * 100) 
+      });
+    }
+    
+    return statusData;
+  }, [tasks, isLoading, includeArchived]);
 
   const timelineData = React.useMemo(() => {
     if (isLoading || !tasks.length || !epicProgress.length) return [];
@@ -289,6 +323,18 @@ const Reports = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <div className="flex items-center mr-4">
+              <input
+                type="checkbox"
+                id="include-archived"
+                checked={includeArchived}
+                onChange={(e) => setIncludeArchived(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="include-archived" className="text-sm">
+                Include Archived
+              </label>
+            </div>
             <Select 
               defaultValue={timeframe} 
               onValueChange={setTimeframe}

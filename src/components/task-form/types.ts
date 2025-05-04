@@ -2,8 +2,8 @@
 import { z } from "zod";
 
 // Define separate types for task and product idea statuses
-const taskStatusSchema = z.enum(["backlog", "ready", "in_progress", "review", "done"]);
-const productIdeaStatusSchema = z.enum(["proposed", "under_review", "approved", "rejected", "implemented"]);
+const taskStatusSchema = z.enum(["backlog", "ready", "in_progress", "review", "done", "archived"]);
+const productIdeaStatusSchema = z.enum(["proposed", "under_review", "approved", "rejected", "implemented", "archived"]);
 
 // Combined schema that allows either task or product idea statuses
 const combinedStatusSchema = z.union([taskStatusSchema, productIdeaStatusSchema]);
