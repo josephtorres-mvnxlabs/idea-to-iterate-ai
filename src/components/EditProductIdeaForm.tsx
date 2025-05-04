@@ -49,7 +49,7 @@ const formSchema = z.object({
   priority: z.enum(["low", "medium", "high"], {
     required_error: "Priority is required",
   }),
-  status: z.enum(["proposed", "under_review", "approved", "rejected", "implemented"], {
+  status: z.enum(["proposed", "under_review", "approved", "rejected", "implemented", "archived"], {
     required_error: "Status is required",
   }),
   owner_id: z.string().min(1, "Owner is required"),
@@ -253,6 +253,7 @@ export function EditProductIdeaForm({
                     <SelectItem value="approved">Approved</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
                     <SelectItem value="implemented">Implemented</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
