@@ -16,7 +16,7 @@ interface EpicSubmissionWithIdeaLinkingProps {
     title: string;
     description: string;
     estimation: number;
-    capability_category: string;
+    capability_category: "frontend" | "backend" | "infrastructure" | "data" | "security" | "other";
   };
   epicId?: string;
   productIdeaId?: string; // Optional ID of product idea to link automatically
@@ -35,13 +35,17 @@ export function EpicSubmissionWithIdeaLinking({
   const [isProductIdeasDialogOpen, setIsProductIdeasDialogOpen] = React.useState(false);
   const { toast } = useToast();
 
-  const handleEpicSuccess = async (epicId: string) => {
-    // Link the epic to all selected product ideas
-    if (selectedProductIdeas.length > 0) {
+  // Modify this function to not expect an argument from EpicSubmissionForm
+  const handleEpicSuccess = async (createdEpicId?: string) => {
+    // If no epicId was provided, use the one from props (for editing) or the one returned from creation
+    const epicIdToUse = createdEpicId || epicId;
+    
+    // Only proceed if we have an epicId to link to
+    if (epicIdToUse && selectedProductIdeas.length > 0) {
       try {
         // Create link promises for all selected product ideas
         const linkPromises = selectedProductIdeas.map(ideaId => 
-          productIdeaApi.linkToEpic(ideaId, epicId)
+          productIdeaApi.linkToEpic(ideaId, epicIdToUse)
         );
         
         // Wait for all links to be created

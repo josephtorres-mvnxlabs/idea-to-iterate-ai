@@ -37,7 +37,7 @@ const defaultValues: Partial<EpicFormValues> = {
 };
 
 interface EpicSubmissionFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (epicId?: string) => void;
   onCancel?: () => void;
   initialValues?: Partial<EpicFormValues>;
   useSheet?: boolean;
@@ -181,8 +181,8 @@ export function EpicSubmissionForm({ onSuccess, onCancel, initialValues, useShee
       form.reset();
       
       if (onSuccess) {
-        // Call onSuccess callback - in LinkedEpicsSection we'll handle this
-        onSuccess();
+        // Call onSuccess callback with the epic ID
+        onSuccess(createdEpic.id);
       }
     } catch (error) {
       console.error("Failed to create/update epic:", error);
