@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { TaskFormBasicFields } from "./TaskFormFields";
 import { TaskFormEstimationFields } from "./TaskFormEstimation";
 import { TaskFormDateFields } from "./TaskFormDates";
-import { TaskFormValues, taskFormSchema, defaultFormValues } from "./types";
+import { TaskFormValues, taskFormSchema, defaultFormValues, TaskStatus, ProductIdeaStatus } from "./types";
 
 interface TaskSubmissionFormProps {
   onSuccess?: () => void;
@@ -51,7 +51,9 @@ export function TaskSubmissionForm({
   // Create form values combining defaults, passed values, and preselected epic
   const formDefaultValues = React.useMemo(() => {
     // Set appropriate default status based on whether it's a product idea
-    const defaultStatus = isProductIdea ? "proposed" : "backlog";
+    const defaultStatus = isProductIdea ? 
+      "proposed" as ProductIdeaStatus : 
+      "backlog" as TaskStatus;
     
     return {
       ...defaultFormValues,
