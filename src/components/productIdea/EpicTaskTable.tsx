@@ -41,6 +41,21 @@ export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
     if (!dateString) return "—";
     return format(new Date(dateString), "MMM d, yyyy");
   };
+
+  // Sort the tasks by status priority: in_progress > backlog/ready > done
+  const sortedTasks = React.useMemo(() => {
+    const getStatusPriority = (status: string): number => {
+      if (status === 'in_progress') return 1;
+      if (status === 'backlog' || status === 'ready') return 2;
+      if (status === 'review') return 3;
+      if (status === 'done') return 4;
+      return 5; // Default for any other status
+    };
+
+    return [...tasks].sort((a, b) => {
+      return getStatusPriority(a.status) - getStatusPriority(b.status);
+    });
+  }, [tasks]);
   
   return (
     <div>
@@ -67,8 +82,8 @@ export function EpicTaskTable({ tasks, epicId }: EpicTaskTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tasks.length > 0 ? (
-              tasks.map((task) => {
+            {sortedTasks.length > 0 ? (
+              sortedTasks.map((task) => {
                 const actualDays = calculateActualDays(task.assigned_date, task.completion_date);
                 const isOverEstimated = actualDays !== null && task.estimation !== undefined && actualDays > task.estimation;
                 
